@@ -15,6 +15,16 @@ func (f Func1[T1, R]) String() string {
 type Func1Bool[T1, R any] func(T1) (R, bool)
 type PartialFunc[T, U any] Func1Bool[T, U]
 
+func MakePartialFunc[T, U any](p Predict[T], act Func1[T, U]) PartialFunc[T, U] {
+	return PartialFunc[T, U](func(v T) (ret U, ok bool) {
+		ok = p(v)
+		if ok {
+			ret = act(v)
+		}
+		return
+	})
+}
+
 func (f Func1Bool[T1, R]) String() string {
 	return typstr(f)
 }
