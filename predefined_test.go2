@@ -1,0 +1,12 @@
+package goscala
+
+import (
+	"testing"
+
+	"github.com/kigichang/goscala/assert"
+)
+
+func TestGetValue(t *testing.T) {
+	assert.True(t, Equal(100, 100))
+	assert.False(t, Equal("abc", "ABC"))
+}
