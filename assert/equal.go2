@@ -1,0 +1,62 @@
+package assert
+
+import (
+	"testing"
+)
+
+func Equal[T comparable](t *testing.T, expected, actual T, a ...interface{}) {
+	if expected != actual {
+		t.Helper()
+		if len(a) > 0 {
+			t.Error(a...)
+		} else {
+			t.Errorf("should be %v, but %v", expected, actual)
+		}
+	}
+}
+
+func Equalf[T comparable](t *testing.T, expected, actual T, format string, a ...interface{}) {
+	if expected != actual {
+		t.Helper()
+		t.Errorf(format, a...)
+	}
+}
+
+func NotEqual[T comparable](t *testing.T, expected, actual T, a ...interface{}) {
+	if expected == actual {
+		t.Helper()
+		if len(a) > 0 {
+			t.Error(a...)
+		} else {
+			t.Errorf("should not be %v", expected)
+		}
+	}
+}
+
+func NotEqualf[T comparable](t *testing.T, expected, actual T, format string, a ...interface{}) {
+	if expected == actual {
+		t.Helper()
+		t.Errorf(format, a...)
+	}
+}
+
+
+func True(t *testing.T, actual bool, a...interface{}) {
+	t.Helper()
+	Equal[bool](t, true, actual, a...)
+}
+
+func Truef(t *testing.T, actual bool, format string, a...interface{}) {
+	t.Helper()
+	Equalf[bool](t, true, actual, format, a...)
+}
+
+func False(t *testing.T, actual bool, a...interface{}) {
+	t.Helper()
+	Equal[bool](t, false, actual, a...)
+}
+
+func Falsef(t *testing.T, actual bool, format string, a...interface{}) {
+	t.Helper()
+	Equalf[bool](t, false, actual, format, a...)
+}
