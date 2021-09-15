@@ -47,6 +47,10 @@ func (e *either[L, R]) Contains(z R, fn EqualFunc[R]) bool {
 }
 
 func (e *either[L, R]) Equals(that Either[L, R], lf EqualFunc[L], rf EqualFunc[R]) bool {
+	if e == that {
+		return true
+	}
+	
 	if e.IsRight() == that.IsRight() {
 		if e.IsRight() {
 			return rf(e.Right(), that.Right())

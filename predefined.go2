@@ -8,7 +8,7 @@ var (
 	ErrZeroValue   		= fmt.Errorf("zero-value")
 	ErrUnsupported 		= fmt.Errorf("unsupported")
 	ErrNil         		= fmt.Errorf("nil")
-	ErrEmpty			= fmt.Errorf("empty")
+	ErrNone				= fmt.Errorf("none")
 	ErrNotSatisfied		= fmt.Errorf("unsatisfied")
 	ErrFalse			= fmt.Errorf("false")
 )
