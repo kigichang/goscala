@@ -3,6 +3,8 @@ package goscala
 // Func1[T1, R any] represents function: T1 => R
 type Func1[T1, R any] func(T1) R
 
+type EqualMethod[T1 any] func(T1) bool
+
 type Predict[T1 any] Func1[T1, bool]
 
 func (f Func1[T1, R]) String() string {
@@ -11,7 +13,7 @@ func (f Func1[T1, R]) String() string {
 
 // Func1Bool[T1, R any] represents function: T1 => (R, bool)
 type Func1Bool[T1, R any] func(T1) (R, bool)
-type ParitalFunc[T, U any] Func1Bool[T, U]
+type PartialFunc[T, U any] Func1Bool[T, U]
 
 func (f Func1Bool[T1, R]) String() string {
 	return typstr(f)

@@ -3,7 +3,7 @@ package goscala
 // Func2[T1, T2, R any] represents function: T1, T2 => R
 type Func2[T1, T2, R any] func(T1, T2) R
 
-type EqualFunc[T1, T2 any] Func2[T1, T2, bool]
+type EqualFunc[T1 any] Func2[T1, T1, bool]
 
 func (f Func2[T1, T2, R]) String() string {
 	return typstr(f)
