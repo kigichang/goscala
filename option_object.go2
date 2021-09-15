@@ -76,20 +76,20 @@ func OptionMapWithBool[T, U any](o Option[T], f Func1Bool[T, U]) Option[U] {
 	return None[U]()
 }
 
-//func OptionToLeft[T, R any](o Option[T], z R) *Either[T, R] {
-//	if o.IsDefined() {
-//		return Left[T, R](o.Get())
-//	}
-//	return Right[T, R](z)
-//}
-//
-//func OptionToRight[L, T any](o Option[T], z L) *Either[L, T] {
-//	if o.IsDefined() {
-//		return Right[L, T](o.Get())
-//	}
-//	return Left[L, T](z)
-//}
-//
+func OptionToLeft[T, R any](o Option[T], z R) Either[T, R] {
+	if o.IsDefined() {
+		return Left[T, R](o.Get())
+	}
+	return Right[T, R](z)
+}
+
+func OptionToRight[L, T any](o Option[T], z L) Either[L, T] {
+	if o.IsDefined() {
+		return Right[L, T](o.Get())
+	}
+	return Left[L, T](z)
+}
+
 func OptionZip[T, U any](o Option[T], that Option[U]) Option[Tuple2[T, U]] {
 	if o.IsDefined() && that.IsDefined() {
 		return Some[Tuple2[T, U]](MakeTuple2[T, U](o.Get(), that.Get()))

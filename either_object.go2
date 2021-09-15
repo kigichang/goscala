@@ -1,0 +1,73 @@
+package goscala
+
+
+func Left[L, R any](left L) Either[L, R] {
+	return &either[L, R] {
+		right: false,
+		lv: left,
+	}
+}
+
+func Right[L, R any](right R) Either[L, R] {
+	return &either[L, R] {
+		right: true,
+		rv: right,
+	}
+}
+
+func MakeEither[L, R any](left L, right R) Either[L, R] {
+	if !IsZero(right) {
+		return Right[L, R](right)
+	}
+
+	if !IsZero(left) {
+		return Left[L, R](left)
+	}
+
+	panic("all arguments are zero-value")
+}
+
+func MakeEitherWithBool[T any](v T, ok bool) Either[bool, T] {
+	if ok {
+		return Right[bool, T](v)
+	}
+
+	return Left[bool, T](ok)
+}
+
+func MakeEitherWithErr[T any](v T, err error) Either[error, T] {
+	if err == nil {
+		return Right[error, T](v)
+	}
+	return Left[error, T](err)
+}
+
+func EitherCond[L, R any](cond Condition, lv L, rv R) Either[L, R] {
+	if cond() {
+		return Right[L, R](rv)
+	}
+	return Left[L, R](lv)
+}
+
+
+func EitherFlatMap[L, R, R1 any](e Either[L, R], f Func1[R, Either[L, R1]]) Either[L, R1] {
+	if e.IsRight() {
+		return f(e.Right())
+	}
+
+	return Left[L, R1](e.Left())
+}
+
+func EitherFold[L, R, T any](e Either[L, R], fa Func1[L, T], fb Func1[R, T]) T {
+	if e.IsRight() {
+		return fb(e.Right())
+	}
+	return fa(e.Left())
+}
+
+func EitherMap[L, R, R1 any](e Either[L, R], f Func1[R, R1]) Either[L, R1] {
+	if e.IsRight() {
+		return Right[L, R1](f(e.Right()))
+	}
+	return Left[L, R1](e.Left())
+}
