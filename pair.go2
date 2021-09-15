@@ -1,0 +1,39 @@
+package goscala
+
+import (
+	"fmt"
+)
+
+type Pair[K comparable, V any] interface {
+	fmt.Stringer
+
+	Tuple() Tuple2[K, V]
+	Get() (K, V)
+	Key() K
+	Value() V
+}
+
+type pair[K comparable, V any] struct {
+	tup *tuple2[K, V]
+}
+
+func (p *pair[K, V]) Tuple() Tuple2[K, V] {
+	return p.tup
+}
+
+func (p *pair[K, V]) String() string {
+	return fmt.Sprintf(`(%v:%v)`, p.tup.v1, p.tup.v2)
+}
+
+func (p *pair[K, V]) Key() K {
+	return p.tup.v1
+}
+
+
+func (p *pair[K, V]) Value() V {
+	return p.tup.v2
+}
+
+func (p *pair[K, V]) Get() (K, V) {
+	return p.tup.Get()
+}
