@@ -1,0 +1,9 @@
+package goscala
+
+import (
+	"reflect"
+)
+
+func typstr(x interface{}) string {
+	return reflect.TypeOf(x).String()
+}
