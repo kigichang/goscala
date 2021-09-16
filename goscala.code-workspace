@@ -6,6 +6,15 @@
 	],
 	"settings": {
 		"go.gopath": "/Users/kigi/go2",
-		"go.goroot": "/Users/kigi/goroot"
+		"go.goroot": "/Users/kigi/goroot",
+		"go.testOnSave": true,
+		"go.testFlags": [
+			"-v", "-cover", "-gcflags", "-G=3"
+		],
+		"go.coverOnSave": true,
+		"go.coverageOptions": "showUncoveredCodeOnly",
+		"go.coverageDecorator": {
+			"type": "gutter"
+		}
 	}
 }
