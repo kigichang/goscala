@@ -3,7 +3,7 @@ package goscala
 import (
 	"testing"
 
-	"github.com/kigichang/goscala/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMakeTuple2(t *testing.T) {

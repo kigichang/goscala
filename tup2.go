@@ -28,6 +28,6 @@ func (t *tuple2[T1, T2]) V1() T1 {
 	return t.v1
 }
 
-func (t *tuple2[T1, T2]) V2() T2{
+func (t *tuple2[T1, T2]) V2() T2 {
 	return t.v2
 }
