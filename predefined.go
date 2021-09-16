@@ -5,26 +5,20 @@ import (
 )
 
 var (
-	ErrZeroValue   		= fmt.Errorf("zero-value")
-	ErrUnsupported 		= fmt.Errorf("unsupported")
-	ErrNil         		= fmt.Errorf("nil")
-	ErrNone				= fmt.Errorf("none")
-	ErrNotSatisfied		= fmt.Errorf("unsatisfied")
-	ErrFalse			= fmt.Errorf("false")
+	ErrZeroValue    = fmt.Errorf("zero-value")
+	ErrUnsupported  = fmt.Errorf("unsupported")
+	ErrNil          = fmt.Errorf("nil")
+	ErrNone         = fmt.Errorf("none")
+	ErrNotSatisfied = fmt.Errorf("unsatisfied")
+	ErrFalse        = fmt.Errorf("false")
 )
 
 type Number interface {
-	type int, int8, int16, int32, int64, 
-		uint, uint8, uint16, uint32, uint64, 
-		float32, float64
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64
 }
 
-
 type Ordered interface {
-	type int, int8, int16, int32, int64,
-		uint, uint8, uint16, uint32, uint64, uintptr,
-		float32, float64,
-		string
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string
 }
 
 func Equal[T comparable](a, b T) bool {
@@ -58,8 +52,9 @@ func Min[T Ordered](a, b T) T {
 }
 
 //type VOrF[T any] interface {
-//	type T, Func[T]
+//	type T | func() T
 //}
+//
 //
 //func GetValue[T VOrF[T]](x T) T {
 //	if reflect.TypeOf(x).Kind() == reflect.Func {
@@ -69,4 +64,3 @@ func Min[T Ordered](a, b T) T {
 //
 //	return x
 //}
-
