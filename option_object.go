@@ -1,22 +1,22 @@
 package goscala
 
 func Some[T any](v T) Option[T] {
-	return &option[T] {
+	return &option[T]{
 		defined: true,
-		v: v,
+		v:       v,
 	}
 }
 
 func None[T any]() Option[T] {
-	return &option[T] {
+	return &option[T]{
 		defined: false,
 	}
 }
 
 func MakeOption[T any](v T) Option[T] {
-	return &option[T] {
+	return &option[T]{
 		defined: !IsZero(v),
-		v: v,
+		v:       v,
 	}
 }
 
@@ -90,6 +90,13 @@ func OptionToRight[L, T any](o Option[T], z L) Either[L, T] {
 	return Left[L, T](z)
 }
 
+func OptionToTry[T, U any](o Option[T], fn Func1[T, U]) Try[U] {
+	if o.IsDefined() {
+		return Success[U](fn(o.Get()))
+	}
+	return Failure[U](ErrNone)
+}
+
 func OptionZip[T, U any](o Option[T], that Option[U]) Option[Tuple2[T, U]] {
 	if o.IsDefined() && that.IsDefined() {
 		return Some[Tuple2[T, U]](MakeTuple2[T, U](o.Get(), that.Get()))
@@ -118,7 +125,6 @@ func OptionUnless[T any](cond Condition, v T) Option[T] {
 	}
 	return None[T]()
 }
-
 
 func OptionCollect[T, U any](o Option[T], pf PartialFunc[T, U]) Option[U] {
 	if o.IsDefined() {

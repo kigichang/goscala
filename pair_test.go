@@ -3,7 +3,7 @@ package goscala
 import (
 	"testing"
 
-	"github.com/kigichang/goscala/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMakePair(t *testing.T) {
@@ -17,4 +17,6 @@ func TestMakePair(t *testing.T) {
 	assert.Equal(t, v2, a2)
 	assert.Equal(t, v1, pair.Key())
 	assert.Equal(t, v2, pair.Value())
+	assert.Equal(t, v1, pair.V1())
+	assert.Equal(t, v2, pair.V2())
 }

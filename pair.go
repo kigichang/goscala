@@ -5,13 +5,13 @@ import (
 )
 
 type Pair[K comparable, V any] interface {
-	fmt.Stringer
-
+	Tuple2[K, V]
 	Tuple() Tuple2[K, V]
-	Get() (K, V)
 	Key() K
 	Value() V
 }
+
+var _ Pair[int, int] = &pair[int, int]{}
 
 type pair[K comparable, V any] struct {
 	tup *tuple2[K, V]

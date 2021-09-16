@@ -3,8 +3,9 @@ package goscala
 import (
 	"fmt"
 	"strconv"
-	"github.com/kigichang/goscala/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSuccess(t *testing.T) {
@@ -23,7 +24,7 @@ func TestFailure(t *testing.T) {
 	assert.Equal(t, false, try.IsSuccess())
 	assert.Equal(t, true, try.IsFailure())
 	assert.Equal(t, ErrNil, try.Failed())
-	assert.Panic(t, func() { try.Get() })
+	assert.Panics(t, func() { try.Get() })
 
 	testErr := fmt.Errorf("test failure")
 	try = Failure[int](testErr)
@@ -31,7 +32,7 @@ func TestFailure(t *testing.T) {
 	assert.Equal(t, false, try.IsSuccess())
 	assert.Equal(t, true, try.IsFailure())
 	assert.Equal(t, testErr, try.Failed())
-	assert.Panic(t, func() { try.Get() })
+	assert.Panics(t, func() { try.Get() })
 }
 
 func TestMakeTry(t *testing.T) {
@@ -51,18 +52,17 @@ func TestMakeTry(t *testing.T) {
 	assert.Equal(t, false, try.IsSuccess())
 	assert.Equal(t, true, try.IsFailure())
 	assert.Equal(t, err, try.Failed())
-	assert.Panic(t, func() { try.Get() })
+	assert.Panics(t, func() { try.Get() })
 }
 
 func TestTryCollect(t *testing.T) {
-	cond := func(v int) bool {
-		return v > 0
-	}
-	act := func(v int) string {
-		return fmt.Sprintf("%d", v)
-	}
 
-	pf := MakePartialFunc(cond, act)
+	pf := func(v int) (s string, ok bool) {
+		if ok = (v > 0); ok {
+			s = strconv.Itoa(v)
+		}
+		return
+	}
 	err := fmt.Errorf("try collect error")
 
 	try := Success(1)
@@ -143,7 +143,7 @@ func TestTryMapWithErr(t *testing.T) {
 }
 
 func TestTryMapWithBool(t *testing.T) {
-	m := map[int]string {
+	m := map[int]string{
 		1: "1",
 	}
 
@@ -215,7 +215,7 @@ func TestTryForeach(t *testing.T) {
 		sum += 1
 	})
 
-	assert.Equal(t, 1 + 1, sum)
+	assert.Equal(t, 1+1, sum)
 
 	sum = 1
 	Failure[int](ErrNil).Foreach(func(v int) {
@@ -243,15 +243,12 @@ func TestTryRecover(t *testing.T) {
 	assert.Equal(t, 1, Success(1).Recover(r).Get())
 	assert.Equal(t, 0, Failure[int](ErrNil).Recover(r).Get())
 
-
-	r = MakePartialFunc(
-		func(err error) bool {
-			return err == ErrNil
-		},
-		func (err error) int {
-			return 0
-		},
-	)
+	r = func(err error) (a int, ok bool) {
+		if ok = (err == ErrNil); ok {
+			a = 0
+		}
+		return
+	}
 
 	assert.Equal(t, 1, Success(1).Recover(r).Get())
 	assert.Equal(t, 0, Failure[int](ErrNil).Recover(r).Get())
@@ -261,7 +258,6 @@ func TestTryRecover(t *testing.T) {
 
 }
 
-
 func TestTryRecoverWith(t *testing.T) {
 	r := func(_ error) (Try[int], bool) {
 		return Success(0), true
@@ -270,15 +266,12 @@ func TestTryRecoverWith(t *testing.T) {
 	assert.Equal(t, 1, Success(1).RecoverWith(r).Get())
 	assert.Equal(t, 0, Failure[int](ErrNil).RecoverWith(r).Get())
 
-
-	r = MakePartialFunc(
-		func(err error) bool {
-			return err == ErrNil
-		},
-		func (err error) Try[int] {
-			return Success(0)
-		},
-	)
+	r = func(err error) (ret Try[int], ok bool) {
+		if ok = (err == ErrNil); ok {
+			ret = Success(0)
+		}
+		return
+	}
 
 	assert.Equal(t, 1, Success(1).RecoverWith(r).Get())
 	assert.Equal(t, 0, Failure[int](ErrNil).RecoverWith(r).Get())

@@ -4,7 +4,6 @@ import (
 	"fmt"
 )
 
-
 type Either[L, R any] interface {
 	fmt.Stringer
 
@@ -24,14 +23,14 @@ type Either[L, R any] interface {
 	GetOrElse(z R) R
 	OrElse(z Either[L, R]) Either[L, R]
 	Swap() Either[R, L]
-	Try() Try[R]
+	//Try() Try[R]
 	Slice() Slice[R]
 }
 
 type either[L, R any] struct {
 	right bool
-	lv L
-	rv R
+	lv    L
+	rv    R
 }
 
 func (e *either[L, R]) String() string {
@@ -52,7 +51,7 @@ func (e *either[L, R]) Equals(that Either[L, R], lf EqualFunc[L], rf EqualFunc[R
 	if e == that {
 		return true
 	}
-	
+
 	if e.IsRight() == that.IsRight() {
 		if e.IsRight() {
 			return rf(e.Right(), that.Right())
@@ -146,21 +145,6 @@ func (e *either[L, R]) Swap() Either[R, L] {
 
 	return Right[R, L](e.lv)
 }
-
-func (e *either[L, R]) Try() Try[R] {
-	if e.right {
-		return Success[R](e.rv)
-	}
-
-	var x interface{} = e.lv
-	switch v := x.(type) {
-	case error:
-		return Failure[R](v)
-	default:
-		return Failure[R](fmt.Errorf(`%v`, e.lv))
-	}
-}
-
 
 func (e *either[L, R]) Slice() Slice[R] {
 	if e.right {

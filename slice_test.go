@@ -3,7 +3,8 @@ package goscala
 import (
 	"strconv"
 	"testing"
-	"github.com/kigichang/goscala/assert"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSliceClone(t *testing.T) {
@@ -462,4 +463,14 @@ func TestSlicePartitionMap(t *testing.T) {
 	a, b := SlicePartitionMap(src, fn)
 	assert.True(t, SliceFrom(11, 13, 15, 17, 19).Equals(a, Equal[int]))
 	assert.True(t, SliceFrom(2, 4, 6, 8).Equals(b, Equal[int]))
+}
+
+func TestSliceGroupBy(t *testing.T) {
+	var src = SliceFrom(1, 3, 5, 7, 9, 2, 4, 6, 8)
+
+	fn := func(v int) bool {
+		return (v & 0x01) == 0
+	}
+	m := SliceGroupBy(src, fn)
+	t.Log(m)
 }

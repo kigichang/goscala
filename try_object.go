@@ -1,12 +1,11 @@
 package goscala
 
-
 func makeTry[T any](v T, err error) (ret *try[T]) {
-	
+
 	e := either[error, T]{
-		right: err == nil, 
-		rv: v,
-		lv: err,
+		right: err == nil,
+		rv:    v,
+		lv:    err,
 	}
 
 	t := try[T](e)

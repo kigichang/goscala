@@ -4,12 +4,11 @@ import (
 	"fmt"
 )
 
-
 type Try[T any] interface {
 	fmt.Stringer
 
 	Equals(Try[T], EqualFunc[T]) bool
-	Either() Either[error, T]
+	
 	IsSuccess() bool
 	IsFailure() bool
 	Get() T
@@ -20,7 +19,9 @@ type Try[T any] interface {
 	OrElse(z Try[T]) Try[T]
 	Recover(PartialFunc[error, T]) Try[T]
 	RecoverWith(PartialFunc[error, Try[T]]) Try[T]
+
 	Option() Option[T]
+	Either() Either[error, T]
 	Slice() Slice[T]
 }
 
@@ -83,7 +84,7 @@ func (t *try[T]) Filter(p Predict[T]) Try[T] {
 	if !t.IsSuccess() || p(t.Get()) {
 		return t
 	}
-	
+
 	return Failure[T](ErrNotSatisfied)
 }
 
@@ -109,7 +110,7 @@ func (t *try[T]) OrElse(z Try[T]) Try[T] {
 }
 
 func (t *try[T]) Recover(pf PartialFunc[error, T]) Try[T] {
-	
+
 	if t.IsFailure() {
 		if v, ok := pf(t.Failed()); ok {
 			return Success[T](v)

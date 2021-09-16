@@ -19,11 +19,12 @@ type Option[T any] interface {
 	IsDefined() bool
 	OrElse(z Option[T]) Option[T]
 	Slice() Slice[T]
+	//Try() Try[T]
 }
 
 type option[T any] struct {
 	defined bool
-	v T
+	v       T
 }
 
 func (o *option[T]) String() string {
@@ -45,7 +46,7 @@ func (o *option[T]) Equals(that Option[T], fn EqualFunc[T]) bool {
 	if o == that {
 		return true
 	}
-	
+
 	if o.IsDefined() == that.IsDefined() {
 		return !o.IsDefined() || fn(o.Get(), that.Get())
 	}

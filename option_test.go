@@ -1,19 +1,19 @@
 package goscala
 
 import (
-	"github.com/kigichang/goscala/assert"
-	"testing"
 	"fmt"
 	"strconv"
-)
+	"testing"
 
+	"github.com/stretchr/testify/assert"
+)
 
 func TestMakeOption(t *testing.T) {
 	v := 0
 	opt := MakeOption[int](v)
 	fmt.Println(opt)
 	assert.Equal(t, false, opt.IsDefined())
-	assert.Panic(t, func() { opt.Get() })
+	assert.Panics(t, func() { opt.Get() })
 
 	v = 1
 	opt = MakeOption[int](v)
@@ -38,7 +38,7 @@ func TestNone(t *testing.T) {
 	opt := None[int]()
 	fmt.Println(opt)
 	assert.Equal(t, false, opt.IsDefined())
-	assert.Panic(t, func() { opt.Get() })
+	assert.Panics(t, func() { opt.Get() })
 }
 
 func TestOptionUnless(t *testing.T) {
@@ -48,7 +48,7 @@ func TestOptionUnless(t *testing.T) {
 
 	fmt.Println(opt)
 	assert.Equal(t, false, opt.IsDefined())
-	assert.Panic(t, func() { opt.Get() })
+	assert.Panics(t, func() { opt.Get() })
 
 	cond = func() bool { return false }
 	opt = OptionUnless[int](cond, v)
@@ -72,18 +72,16 @@ func TestOptionWhen(t *testing.T) {
 
 	fmt.Println(opt)
 	assert.Equal(t, false, opt.IsDefined())
-	assert.Panic(t, func() { opt.Get() })
+	assert.Panics(t, func() { opt.Get() })
 }
 
 func TestOptionCollect(t *testing.T) {
-	p := MakePartialFunc[int, string](
-		func(v int) bool {
-			return v != 0
-		},
-		func(v int) string {
-			return fmt.Sprintf(`%d`, v)
-		},
-	)
+	p := func(v int) (s string, ok bool) {
+		if ok = (v != 0); ok {
+			s = strconv.Itoa(v)
+		}
+		return
+	}
 
 	o := MakeOption[int](0)
 	ans := OptionCollect[int, string](o, p)
@@ -102,6 +100,7 @@ func TestOptionCollect(t *testing.T) {
 func TestOptionEquals(t *testing.T) {
 	o := Some(100)
 
+	assert.True(t, o.Equals(o, Equal[int]))
 	assert.True(t, o.Equals(Some(100), Equal[int]))
 	assert.False(t, o.Equals(Some(101), Equal[int]))
 	assert.False(t, o.Equals(None[int](), Equal[int]))
@@ -140,7 +139,7 @@ func TestOptionExists(t *testing.T) {
 
 func TestOptionFilter(t *testing.T) {
 	s := Some[int](100)
-	
+
 	f1 := func(v int) bool {
 		return v == 100
 	}
@@ -167,7 +166,7 @@ func TestOptionFilter(t *testing.T) {
 
 func TestOptionFilterNot(t *testing.T) {
 	s := Some[int](100)
-	
+
 	f1 := func(v int) bool {
 		return v == 100
 	}
@@ -178,7 +177,7 @@ func TestOptionFilterNot(t *testing.T) {
 
 	s1 := s.FilterNot(f1)
 	assert.Equal(t, false, s1.IsDefined())
-	
+
 	s2 := s.FilterNot(f2)
 	assert.Equal(t, s.IsDefined(), s2.IsDefined())
 	assert.Equal(t, s.Get(), s2.Get())
@@ -221,7 +220,7 @@ func TestOptionFold(t *testing.T) {
 
 func TestOptionForall(t *testing.T) {
 	s := Some[int](100)
-	
+
 	f1 := func(v int) bool {
 		return v == 100
 	}
@@ -245,7 +244,7 @@ func TestOptionForeach(t *testing.T) {
 		sum += v
 	}
 	s.Foreach(f)
-	assert.Equal(t, 123 + 100, sum)
+	assert.Equal(t, 123+100, sum)
 
 	sum = 123
 	n := None[int]()
@@ -291,7 +290,6 @@ func TestOptionOrElse(t *testing.T) {
 func TestOptionZip(t *testing.T) {
 	s1 := Some[int](100)
 	s2 := Some[string]("abc")
-
 
 	s := OptionZip(s1, s2)
 

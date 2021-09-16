@@ -1,5 +1,8 @@
 package goscala
 
+import (
+	"fmt"
+)
 
 func Left[L, R any](left L) Either[L, R] {
 	return &either[L, R] {
@@ -70,4 +73,18 @@ func EitherMap[L, R, R1 any](e Either[L, R], f Func1[R, R1]) Either[L, R1] {
 		return Right[L, R1](f(e.Right()))
 	}
 	return Left[L, R1](e.Left())
+}
+
+func EitherToTry[L, R, R1 any](e Either[L, R], fn Func1[R, R1]) Try[R1] {
+	if e.IsRight() {
+		return Success[R1](fn(e.Right()))
+	}
+
+	var x interface{} = e.Left()
+	switch v := x.(type) {
+	case error:
+		return Failure[R1](v)
+	default:
+		return Failure[R1](fmt.Errorf(`%v`, e.Left()))
+	}
 }
