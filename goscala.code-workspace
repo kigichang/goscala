@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"go.gopath": "/Users/kigi/go2",
+		"go.goroot": "/Users/kigi/goroot"
+	}
+}
