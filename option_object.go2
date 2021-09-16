@@ -118,3 +118,11 @@ func OptionUnless[T any](cond Condition, v T) Option[T] {
 	}
 	return None[T]()
 }
+
+
+func OptionCollect[T, U any](o Option[T], pf PartialFunc[T, U]) Option[U] {
+	if o.IsDefined() {
+		return MakeOptionWithBool[U](pf(o.Get()))
+	}
+	return None[U]()
+}

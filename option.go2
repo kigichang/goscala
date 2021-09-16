@@ -18,7 +18,7 @@ type Option[T any] interface {
 	GetOrElse(z T) T
 	IsDefined() bool
 	OrElse(z Option[T]) Option[T]
-	//Try() *Try[T]
+	Slice() Slice[T]
 }
 
 type option[T any] struct {
@@ -107,18 +107,9 @@ func (o *option[T]) OrElse(z Option[T]) Option[T] {
 	return z
 }
 
-func (o *option[T]) Try() Try[T] {
-	if o.IsDefined() {
-		return Success[T](o.v)
+func (o *option[T]) Slice() Slice[T] {
+	if o.defined {
+		return SliceFrom(o.v)
 	}
-	return Failure[T](ErrNone)
+	return SliceEmpty[T]()
 }
-
-
-func OptionCollect[T, U any](o Option[T], pf PartialFunc[T, U]) Option[U] {
-	if o.IsDefined() {
-		return MakeOptionWithBool[U](pf(o.Get()))
-	}
-	return None[U]()
-}
-

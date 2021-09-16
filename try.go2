@@ -21,6 +21,7 @@ type Try[T any] interface {
 	Recover(PartialFunc[error, T]) Try[T]
 	RecoverWith(PartialFunc[error, Try[T]]) Try[T]
 	Option() Option[T]
+	Slice() Slice[T]
 }
 
 type try[T any] either[error, T]
@@ -131,4 +132,11 @@ func (t *try[T]) Option() Option[T] {
 		return Some[T](t.Get())
 	}
 	return None[T]()
+}
+
+func (t *try[T]) Slice() Slice[T] {
+	if t.IsSuccess() {
+		return SliceFrom(t.Get())
+	}
+	return SliceEmpty[T]()
 }

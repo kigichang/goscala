@@ -4,6 +4,7 @@ package goscala
 type Func2[T1, T2, R any] func(T1, T2) R
 
 type EqualFunc[T1 any] Func2[T1, T1, bool]
+type CompareFunc[T1 any] Func2[T1, T1, int]
 
 func (f Func2[T1, T2, R]) String() string {
 	return typstr(f)

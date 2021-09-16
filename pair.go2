@@ -29,9 +29,16 @@ func (p *pair[K, V]) Key() K {
 	return p.tup.v1
 }
 
+func (p *pair[K, V]) V1() K {
+	return p.Key()
+}
 
 func (p *pair[K, V]) Value() V {
 	return p.tup.v2
+}
+
+func (p *pair[K, V]) V2() V {
+	return p.Value()
 }
 
 func (p *pair[K, V]) Get() (K, V) {
