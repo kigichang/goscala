@@ -14,7 +14,7 @@
 
 請參考: [How to use type parameters for generic programming](https://www.jetbrains.com/help/go/how-to-use-type-parameters-for-generic-programming.html)。
 
-我的環境： Mac OS Big Sur 11.5.2，安裝 Go 1.18 步驟如下：
+我的環境： Mac OS Big Sur 11.5.2 / Go 1.17.1，安裝 Go 1.18 步驟如下：
 
 1. `cd ~`
 1. `git clone https://go.googlesource.com/go goroot`
