@@ -197,7 +197,7 @@ func SliceGroupMapReduce[T any, K comparable, V any](s Slice[T], key Func1[T, K]
 	return ret
 }
 
-func sliceMaxBy[T, B Ordered](s Slice[T], fn Func1[T, B], cmp CompareFunc[B]) Option[T] {
+func sliceMaxBy[T any, B Ordered](s Slice[T], fn Func1[T, B], cmp CompareFunc[B]) Option[T] {
 	size := s.Len()
 	if size == 0 {
 		return None[T]()
@@ -220,20 +220,38 @@ func sliceMaxBy[T, B Ordered](s Slice[T], fn Func1[T, B], cmp CompareFunc[B]) Op
 	return Some[T](v)
 }
 
-func SliceMaxBy[T, B Ordered](s Slice[T], fn Func1[T, B]) Option[T] {
+func SliceMaxBy[T any, B Ordered](s Slice[T], fn Func1[T, B]) Option[T] {
 	return sliceMaxBy(s, fn, Compare[B])
 }
 
-func SliceMinBy[T, B Ordered](s Slice[T], fn Func1[T, B]) Option[T] {
+func SliceMinBy[T any, B Ordered](s Slice[T], fn Func1[T, B]) Option[T] {
 	cmp := func(v1, v2 B) int {
 		return -Compare(v1, v2)
 	}
 	return sliceMaxBy(s, fn, cmp)
 }
 
-func SliceSortBy[T, B Ordered](s Slice[T], fn Func1[T, B]) Slice[T] {
+func SliceSortBy[T any, B Ordered](s Slice[T], fn Func1[T, B]) Slice[T] {
 	sort.SliceStable(s, func(i, j int) bool {
 		return fn(s[i]) < fn(s[j])
 	})
 	return s
+}
+
+func SliceToMap[K comparable, V any](s Slice[Pair[K, V]]) Map[K, V] {
+	ret := MakeMap[K, V](s.Len())
+
+	for i := range s {
+		ret[s[i].Key()] = s[i].Value()
+	}
+
+	return ret
+}
+
+func SliceToSet[K comparable](s Slice[K]) Set[K] {
+	ret := MakeMap[K, bool](s.Len())
+	for i := range s {
+		ret[s[i]] = true
+	}
+	return Set[K](ret)
 }
