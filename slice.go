@@ -4,10 +4,6 @@ import (
 	"sort"
 )
 
-type Sliceable[T any] interface {
-	Slice() Slice[T]
-}
-
 type Slice[T any] []T
 
 func (s Slice[T]) Clone() Slice[T] {

@@ -13,6 +13,12 @@ func IsZero(v interface{}) bool {
 	return reflect.ValueOf(v).IsZero()
 }
 
+func ZeroFunc[T any](v T) func() (T, bool) {
+	return func() (T, bool) {
+		return v, !IsZero(v)
+	}
+}
+
 func Equal[T comparable](a, b T) bool {
 	return a == b
 }
@@ -46,3 +52,11 @@ func Min[T Ordered](a, b T) T {
 func Identity[T any](v T) T {
 	return v
 }
+
+//func IdentityWithBool[T](v T, ok bool) (T, bool) {
+//	return v, ok
+//}
+//
+//func IdentityWithErr[T](v T, err error) (T, error) {
+//	return v, err
+//}

@@ -214,8 +214,8 @@ func TestOptionFold(t *testing.T) {
 
 	z := "zero"
 
-	assert.Equal(t, "100", OptionFold(Some[int](100), z, f))
-	assert.Equal(t, "zero", OptionFold(None[int](), z, f))
+	assert.Equal(t, "100", OptionFold[int, string](Some[int](100))(z, f))
+	assert.Equal(t, "zero", OptionFold[int, string](None[int]())(z, f))
 }
 
 func TestOptionForall(t *testing.T) {

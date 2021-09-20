@@ -14,24 +14,31 @@ func None[T any]() Option[T] {
 }
 
 func MakeOption[T any](v T) Option[T] {
-	return &option[T]{
-		defined: !IsZero(v),
-		v:       v,
-	}
+	return MonadMaker[T, Option[T]](v)(None[T](), Some[T])
+	//return &option[T]{
+	//	defined: !IsZero(v),
+	//	v:       v,
+	//}
 }
 
 func MakeOptionWithBool[T any](v T, ok bool) Option[T] {
-	if ok {
-		return Some[T](v)
-	}
-	return None[T]()
+	return MonadFold[T, Option[T]](func() (T, bool) {
+		return v, ok
+	})(None[T](), Some[T])
+	//if ok {
+	//	return Some[T](v)
+	//}
+	//return None[T]()
 }
 
 func MakeOptionWithErr[T any](v T, err error) Option[T] {
-	if err != nil {
-		return None[T]()
-	}
-	return Some[T](v)
+	return MonadFold[T, Option[T]](func() (T, bool) {
+		return v, err == nil
+	})(None[T](), Some[T])
+	//if err != nil {
+	//	return None[T]()
+	//}
+	//return Some[T](v)
 }
 
 func OptionWhen[T any](cond Condition, v T) Option[T] {
@@ -55,17 +62,16 @@ func OptionFlatMap[T, U any](o Option[T]) Func1[Func1[T, Option[U]], Option[U]] 
 	//return None[U]()
 //}
 
-func OptionFold[T, U any](o Option[T], z U, f Func1[T, U]) U {
-	if o.IsDefined() {
-		return f(o.Get())
-	}
-	return z
+func OptionFold[T, U any](o Option[T]) Func2[U, Func1[T, U], U] {
+	return MonadFold[T, U](o.Fetch)
 }
 
 func OptionMap[T, U any](o Option[T]) Func1[Func1[T, U], Option[U]] {
 
 	return func(f Func1[T, U]) Option[U] {
-		return MonadMap(o.IsDefined, o.Get, f, None[U], Some[U])
+		//return MonadMap(o.IsDefined, o.Get, f, None[U], Some[U])
+		gen := Func1AndThen[T, U, Option[U]](f, Some[U])
+		return MonadFold[T, Option[U]](o.Fetch)(None[U](), gen)
 	}
 }
 //func OptionMap[T, U any](o Option[T], f Func1[T, U]) Option[U] {

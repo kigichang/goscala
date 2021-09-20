@@ -36,7 +36,7 @@ func MakeTryWithBool[T any](v T, ok bool) Try[T] {
 	if ok {
 		return Success[T](v)
 	}
-	return Failure[T](ErrNotSatisfied)
+	return Failure[T](ErrUnsatisfied)
 }
 
 func TryCollect[T, U any](t Try[T], pf PartialFunc[T, U]) Try[U] {

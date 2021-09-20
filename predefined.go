@@ -9,12 +9,16 @@ var (
 	ErrUnsupported  = fmt.Errorf("unsupported")
 	ErrNil          = fmt.Errorf("nil")
 	ErrNone         = fmt.Errorf("none")
-	ErrNotSatisfied = fmt.Errorf("unsatisfied")
+	ErrUnsatisfied = fmt.Errorf("unsatisfied")
 	ErrFalse        = fmt.Errorf("false")
 )
 
 type Fetcher[T any] interface {
 	Fetch() (T, bool)
+}
+
+type Sliceable[T any] interface {
+	Slice() Slice[T]
 }
 
 //type VOrF[T any] interface {

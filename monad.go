@@ -1,11 +1,28 @@
 package goscala
 
-func MonadFold[T, U any](z U, pf FuncBool[T], fn Func1[T, U]) U {
-	v, ok := pf()
-	if ok {
-		return fn(v)
+
+func MonadFold[T, U any](fetch FetchFunc[T]) Func2[U, Func1[T, U], U] {
+	return func(z U, fn Func1[T, U]) U {
+		v, ok := fetch()
+		if ok {
+			return fn(v)
+		}
+		return z
 	}
-	return z
+}
+
+func MonadMaker[T, U any](v T) Func2[U, Func1[T, U], U] {
+	return MonadFold[T, U](ZeroFunc[T](v))
+}
+
+func MonadFoldLeft[T, U any](s SliceFunc[T]) Func2[U, Func2[U, T, U], U] {
+	return func(z U, fn Func2[U, T, U]) U {
+		ss := s()
+		for i := range ss {
+			z = fn(z, ss[i])
+		}
+		return z
+	}
 }
 
 //func MonadFoldLeft[T, U any](s Slice[T], z U, fn Func1[U, T, U]) U {

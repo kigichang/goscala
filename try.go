@@ -85,7 +85,7 @@ func (t *try[T]) Filter(p Predict[T]) Try[T] {
 		return t
 	}
 
-	return Failure[T](ErrNotSatisfied)
+	return Failure[T](ErrUnsatisfied)
 }
 
 func (t *try[T]) Foreach(f func(T)) {

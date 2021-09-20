@@ -78,7 +78,7 @@ func TestTryCollect(t *testing.T) {
 	try = Success(-1)
 	try2 = TryCollect(try, pf)
 	assert.True(t, try2.IsFailure())
-	assert.Equal(t, ErrNotSatisfied, try2.Failed())
+	assert.Equal(t, ErrUnsatisfied, try2.Failed())
 }
 
 func TestTryFlatMap(t *testing.T) {
@@ -162,7 +162,7 @@ func TestTryMapWithBool(t *testing.T) {
 
 	try = TryMapWithBool(Success(2), f)
 	assert.True(t, try.IsFailure())
-	assert.Equal(t, ErrNotSatisfied, try.Failed())
+	assert.Equal(t, ErrUnsatisfied, try.Failed())
 }
 
 func TestTryTransform(t *testing.T) {
@@ -199,7 +199,7 @@ func TestTryFilter(t *testing.T) {
 	try = Success(-1)
 	try2 = try.Filter(predict)
 	assert.True(t, try2.IsFailure())
-	assert.Equal(t, ErrNotSatisfied, try2.Failed())
+	assert.Equal(t, ErrUnsatisfied, try2.Failed())
 
 	err := fmt.Errorf("try filter error")
 	try = Failure[int](err)
