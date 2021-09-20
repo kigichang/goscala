@@ -8,6 +8,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+
+func sliceEqual[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func TestFoldBool(t *testing.T) {
 	fetch1 := func() (int, bool) {
 		return 100, true
@@ -115,4 +129,24 @@ func TestFlatMap(t *testing.T) {
 	for i := range ans {
 		assert.Equal(t, ans[i], result[i])
 	}
+}
+
+func TestScanLeft(t *testing.T) {
+	s := []int {1, 3, 5, 7, 9, 2, 4, 6, 8}
+
+	result := monad.ScanLeft[int, int](s)(100)(func(v1, v2 int) int {
+		return v1 + v2
+	})
+	ans := []int {100, 101, 104, 109, 116, 125, 127, 131, 137, 145}
+	assert.True(t, sliceEqual(ans, result))
+}
+
+func TestScanRight(t *testing.T) {
+	s := []int {1, 3, 5, 7, 9, 2, 4, 6, 8}
+	result := monad.ScanRight[int, int](s)(100)(func(v1, v2 int) int {
+		return v1 + v2
+	})
+
+	ans := []int{145, 144, 141, 136, 129, 120, 118, 114, 108, 100}
+	assert.True(t, sliceEqual(ans, result))
 }

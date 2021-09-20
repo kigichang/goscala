@@ -35,6 +35,16 @@ func FoldLeft[T, U any](s []T) func(U) func(func(U, T) U) U {
 	}
 }
 
+func ScanLeft[T, U any](s []T) func(U) func(func(U, T) U) []U {
+	return func(z U) func(func(U, T) U) []U {
+		return func(fn func(U, T) U) []U {
+			return FoldLeft[T, []U](s)([]U{z})(func (a []U, b T) []U {
+				return append(a, fn(a[len(a)-1], b))
+			})
+		}
+	}
+}
+
 func FoldRight[T, U any](s []T) func(U) func(func(T, U) U) U {
 	return func (z U) func(func(T, U) U) U {
 		return func(fn func(T, U) U) U {
@@ -44,6 +54,27 @@ func FoldRight[T, U any](s []T) func(U) func(func(T, U) U) U {
 				zz = fn(s[i], zz)
 			}
 			return zz
+		}
+	}
+}
+
+func ScanRight[T, U any](s []T) func(U) func(func(T, U) U) []U {
+	return func(z U) func(func(T, U) U) []U {
+		return func (fn func(T, U) U) []U {
+			result := FoldRight[T, []U](s)([]U{z})(func(a T, b []U) []U {
+				return append(b, fn(a, b[len(b) - 1]))
+			})
+
+			size := len(result)
+			half := size / 2
+
+			for i := 0; i < half; i++ {
+				tmp := result[i]
+				result[i] = result[size - 1 - i] 
+				result[size - 1 - i] = tmp
+			}
+
+			return result
 		}
 	}
 }
