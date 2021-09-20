@@ -12,7 +12,7 @@ func (f Func[R]) String() string {
 // FuncBool[R any] represents function: => (R, bool)
 type FuncBool[R any] func() (R, bool)
 
-func FuncBoolMaker[R any](v R, ok bool) (R, bool) {
+func FuncBoolMaker[R any](v R, ok bool) func() (R, bool) {
 	return func() (R, bool) {
 		return v, ok
 	}
