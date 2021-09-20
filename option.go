@@ -6,6 +6,7 @@ import (
 
 type Option[T any] interface {
 	fmt.Stringer
+	Fetcher[T]
 
 	Contains(T, EqualFunc[T]) bool
 	Exists(p Predict[T]) bool
@@ -31,7 +32,7 @@ func (o *option[T]) String() string {
 	if o.defined {
 		return fmt.Sprintf(`Some(%v)`, o.v)
 	}
-	return fmt.Sprintf(`None(%s)`, typstr(o.v))
+	return fmt.Sprintf(`None(%s)`, TypeStr(o.v))
 }
 
 func (o *option[T]) Contains(elem T, fn EqualFunc[T]) bool {
@@ -113,4 +114,11 @@ func (o *option[T]) Slice() Slice[T] {
 		return SliceFrom(o.v)
 	}
 	return SliceEmpty[T]()
+}
+
+func (o *option[T]) Fetch() (ret T, ok bool) {
+	if ok = o.defined; ok {
+		ret = o.v
+	}
+	return
 }

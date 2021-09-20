@@ -16,7 +16,7 @@ func Curried3[T1, T2, T3, R any](fn Func3[T1, T2, T3, R]) Currying3[T1, T2, T3, 
 }
 
 func (f Func3[T1, T2, T3, R]) String() string {
-	return typstr(f)
+	return TypeStr(f)
 }
 
 func (f Func3[T1, T2, T3, R]) Curried() Currying3[T1, T2, T3, R] {
@@ -27,12 +27,12 @@ func (f Func3[T1, T2, T3, R]) Curried() Currying3[T1, T2, T3, R] {
 type Func3Bool[T1, T2, T3, R any] func(T1, T2, T3) (R, bool)
 
 func (f Func3Bool[T1, T2, T3, R]) String() string {
-	return typstr(f)
+	return TypeStr(f)
 }
 
 // Func3Err[T1, R any] represents function: T1, T2, T3 => (R, error)
 type Func3Err[T1, T2, T3, R any] func(T1, T2, T3) (R, error)
 
 func (f Func3Err[T1, T2, T3, R]) String() string {
-	return typstr(f)
+	return TypeStr(f)
 }

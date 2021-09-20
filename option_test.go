@@ -198,12 +198,12 @@ func TestOptionFlatMap(t *testing.T) {
 		return Some[string](fmt.Sprintf("%d", v))
 	}
 
-	s1 := OptionFlatMap(s, f)
+	s1 := OptionFlatMap[int, string](s)(f)
 	assert.Equal(t, true, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
 
 	n := None[int]()
-	s1 = OptionFlatMap(n, f)
+	s1 = OptionFlatMap[int, string](n)(f)
 	assert.Equal(t, false, s1.IsDefined())
 }
 
@@ -266,12 +266,12 @@ func TestOptionMap(t *testing.T) {
 		return fmt.Sprintf("%d", v)
 	}
 
-	s1 := OptionMap(s, f)
+	s1 := OptionMap[int, string](s)(f)
 	assert.Equal(t, true, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
 
 	n := None[int]()
-	s1 = OptionMap(n, f)
+	s1 = OptionMap[int, string](n)(f)
 	assert.Equal(t, false, s1.IsDefined())
 }
 

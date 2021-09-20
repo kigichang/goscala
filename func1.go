@@ -8,7 +8,7 @@ type EqualMethod[T1 any] func(T1) bool
 type Predict[T1 any] Func1[T1, bool]
 
 func (f Func1[T1, R]) String() string {
-	return typstr(f)
+	return TypeStr(f)
 }
 
 // Func1Bool[T1, R any] represents function: T1 => (R, bool)
@@ -26,12 +26,12 @@ type PartialFunc[T, U any] Func1Bool[T, U]
 //}
 
 func (f Func1Bool[T1, R]) String() string {
-	return typstr(f)
+	return TypeStr(f)
 }
 
 // Func1Err[T1, R any] represents function: T1 => (R, error)
 type Func1Err[T1, R any] func(T1) (R, error)
 
 func (f Func1Err[T1, R]) String() string {
-	return typstr(f)
+	return TypeStr(f)
 }

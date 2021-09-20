@@ -34,7 +34,7 @@ Compile 時，還是需要用到 `-gcflags -G=3`
 Go2Go:
 
 ```go
-type Number interface {
+type Numeric interface {
     type int, ...
 }
 ```
@@ -42,7 +42,7 @@ type Number interface {
 在 Go 1.18 變成
 
 ```go
-type Number interface {
+type Numeric interface {
     int, ....
 }
 ```

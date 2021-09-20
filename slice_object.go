@@ -34,7 +34,7 @@ func SliceFill[T any](size int, v T) Slice[T] {
 	return ret
 }
 
-func SliceRange[T Number] (start, end, step T) Slice[T] {
+func SliceRange[T Numeric] (start, end, step T) Slice[T] {
 	ret := SliceEmpty[T]()
 
 	for i := start; i < end; i += step {

@@ -1,6 +1,6 @@
 package grp
 
-type Number interface {
+type Numeric interface {
 	int | int8
 }
 
@@ -12,6 +12,6 @@ func (a *A[T]) Map[U any](f func(T) U) {
 	
 }
 
-func Add[T Number](a, b T) T {
+func Add[T Numeric](a, b T) T {
 	return a + b
 }
