@@ -34,3 +34,17 @@ func TestRight(t *testing.T) {
 	assert.Equal(t, v, x)
 	assert.True(t, ok)
 }
+
+func TestEitherOption(t *testing.T) {
+	/*
+	   Right(12).toOption // Some(12)
+	   Left(12).toOption  // None
+	*/
+	o := goscala.Right[int, int](12).Option()
+	assert.Equal(t, true, o.IsDefined())
+	assert.Equal(t, 12, o.Get())
+
+	o = goscala.Left[string, int]("12").Option()
+	assert.Equal(t, false, o.IsDefined())
+	assert.Panics(t, func() { o.Get() })
+}

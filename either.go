@@ -1,6 +1,9 @@
 package goscala
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/kigichang/goscala/monad"
+)
 
 type Either[L, R any] interface {
 	fmt.Stringer
@@ -10,6 +13,7 @@ type Either[L, R any] interface {
 	Get() R
 	Left() L
 	Right() R
+	Option() Option[R]
 }
 
 type either[L, R any] struct {
@@ -55,6 +59,13 @@ func (e *either[L, R]) Right() R {
 
 func (e *either[L, R]) Get() R {
 	return e.Right()
+}
+
+func (e *either[L, R]) Option() Option[R] {
+	return monad.FoldBool[R, Option[R]](e.Fetch)(
+		None[R],
+		Some[R],
+	)
 }
 
 func Left[L, R any](v L) Either[L, R] {
