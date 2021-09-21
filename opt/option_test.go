@@ -49,7 +49,7 @@ func TestMakeWitErr(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func TestOptionMap(t *testing.T) {
+func TestMap(t *testing.T) {
 	s := goscala.Some[int](100)
 
 	s1 := opt.Map[int, string](s)(strconv.Itoa)
@@ -62,7 +62,7 @@ func TestOptionMap(t *testing.T) {
 }
 
 
-func TestOptionFlatMap(t *testing.T) {
+func TestFlatMap(t *testing.T) {
 	s := goscala.Some[int](100)
 
 	f := monad.FuncAndThen[int, string, goscala.Option[string]](strconv.Itoa)(goscala.Some[string])
@@ -76,14 +76,14 @@ func TestOptionFlatMap(t *testing.T) {
 	assert.Equal(t, false, s1.IsDefined())
 }
 
-func TestOptionFold(t *testing.T) {
+func TestFold(t *testing.T) {
 	z := "zero"
 
 	assert.Equal(t, "100", opt.Fold[int, string](goscala.Some[int](100))(z)(strconv.Itoa))
 	assert.Equal(t, "zero", opt.Fold[int, string](goscala.None[int]())(z)(strconv.Itoa))
 }
 
-func TestOptionCollect(t *testing.T) {
+func TestCollect(t *testing.T) {
 	p := func(v int) (s string, ok bool) {
 		if ok = (v != 0); ok {
 			s = strconv.Itoa(v)
@@ -105,7 +105,7 @@ func TestOptionCollect(t *testing.T) {
 	assert.Equal(t, false, ans.IsDefined())
 }
 
-func TestOptionToLeft(t *testing.T) {
+func TestLeft(t *testing.T) {
 	v1 := 1
 	v2 := "abc"
 	o := goscala.Some[int](v1)
@@ -120,7 +120,7 @@ func TestOptionToLeft(t *testing.T) {
 	assert.Equal(t, v2, e.Right())
 }
 
-func TestOptionRight(t *testing.T) {
+func TestRight(t *testing.T) {
 	v1 := 1
 	v2 := "abc"
 	o := goscala.Some[int](v1)
@@ -133,4 +133,24 @@ func TestOptionRight(t *testing.T) {
 	e = opt.Right[string, int](o)(v2)
 	assert.True(t, e.IsLeft())
 	assert.Equal(t, v2, e.Left())
+}
+
+func TestWhen(t *testing.T) {
+	o := opt.When(goscala.True, 0)
+	assert.True(t, o.IsDefined())
+	assert.Equal(t, 0, o.Get())
+
+	o = opt.When(goscala.False, 100)
+	assert.False(t, o.IsDefined())
+}
+
+
+func TestUnless(t *testing.T) {
+	o := opt.Unless(goscala.True, 100)
+	assert.False(t, o.IsDefined())
+	
+	o = opt.Unless(goscala.False, 0)
+	assert.True(t, o.IsDefined())
+	assert.Equal(t, 0, o.Get())
+
 }
