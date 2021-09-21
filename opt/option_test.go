@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMakeWithBool(t *testing.T) {
-	o := opt.MakeWithBool(0, true)
+func TestBool(t *testing.T) {
+	o := opt.Bool(0, true)
 
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
@@ -20,7 +20,7 @@ func TestMakeWithBool(t *testing.T) {
 	assert.Equal(t, 0, v)
 	assert.True(t, ok)
 
-	o = opt.MakeWithBool(100, false)
+	o = opt.Bool(100, false)
 	assert.False(t, o.IsDefined())
 	assert.Panics(t, func() { o.Get() })
 
@@ -30,8 +30,8 @@ func TestMakeWithBool(t *testing.T) {
 
 }
 
-func TestMakeWitErr(t *testing.T) {
-	o := opt.MakeWithErr(0, nil)
+func TestErr(t *testing.T) {
+	o := opt.Err(0, nil)
 
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
@@ -40,7 +40,7 @@ func TestMakeWitErr(t *testing.T) {
 	assert.Equal(t, 0, v)
 	assert.True(t, ok)
 
-	o = opt.MakeWithErr(100, fmt.Errorf("test"))
+	o = opt.Err(100, fmt.Errorf("test"))
 	assert.False(t, o.IsDefined())
 	assert.Panics(t, func() { o.Get() })
 
@@ -91,11 +91,11 @@ func TestCollect(t *testing.T) {
 		return
 	}
 
-	o := opt.MakeWithBool(0, false)
+	o := opt.Bool(0, false)
 	ans := opt.Collect[int, string](o)(p)
 	assert.Equal(t, false, ans.IsDefined())
 
-	o = opt.MakeWithBool(100, true)
+	o = opt.Bool(100, true)
 	ans = opt.Collect[int, string](o)(p)
 	assert.Equal(t, true, ans.IsDefined())
 	assert.Equal(t, "100", ans.Get())

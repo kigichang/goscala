@@ -132,3 +132,44 @@ func TestEitherForeach(t *testing.T) {
 	})
 	assert.Equal(t, "hello", str)
 }
+
+func TestEitherGetOrElse(t *testing.T) {
+	/*
+	   Right(12).getOrElse(17) // 12
+	   Left(12).getOrElse(17)  // 17
+	*/
+	assert.Equal(t, 12, goscala.Right[int, int](12).GetOrElse(17))
+	assert.Equal(t, 17, goscala.Left[int, int](12).GetOrElse(17))
+}
+
+
+
+func TestEitherSWap(t *testing.T) {
+	/*
+	   val left: Either[String, Int]  = Left("left")
+	   val right: Either[Int, String] = left.swap // Result: Right("left")
+	   val right = Right(2)
+	   val left  = Left(3)
+	   for {
+	     r1 <- right
+	     r2 <- left.swap
+	   } yield r1 * r2 // Right(6)
+	*/
+	left := goscala.Left[string, int]("left")
+	right := left.Swap()
+	assert.Equal(t, true, right.IsRight())
+	assert.Equal(t, "left", right.Right())
+	assert.Panics(t, func() { right.Left() })
+
+	//r1 := Right[string, int](2)
+	//r2 := Left[int, string](3).Swap()
+	//result := EitherFlatMap(r1, func(v1 int) Either[string, int] {
+	//	return EitherMap(r2, func(v2 int) int {
+	//		return v1 * v2
+	//	})
+	//})
+//
+	//assert.Equal(t, true, result.IsRight())
+	//assert.Equal(t, 2*3, result.Get())
+
+}

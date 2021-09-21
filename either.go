@@ -19,6 +19,10 @@ type Either[L, R any] interface {
 	FilterOrElse(func(R) bool, L) Either[L, R]
 	Forall(func(R) bool) bool
 	Foreach(func(R))
+	GetOrElse(R) R
+	OrElse(Either[L, R]) Either[L, R]
+	Swap() Either[R, L]
+	Slice() []R
 }
 
 type either[L, R any] struct {
@@ -103,6 +107,34 @@ func (e *either[L, R]) Foreach(fn func(R)) {
 	monad.FoldBool[R, Unit](e.Fetch)(
 		UnitFunc,
 		UnitWrap(fn),
+	)
+}
+
+func (e *either[L, R]) GetOrElse(z R) R {
+	return monad.FoldBool[R, R](e.Fetch)(
+		ValueFunc(z),
+		Id[R],
+	)
+}
+
+func (e *either[L, R]) OrElse(z Either[L, R]) Either[L, R] {
+	return monad.FoldBool[R, Either[L, R]](e.Fetch)(
+		ValueFunc(z),
+		Right[L, R],
+	)
+}
+
+func (e *either[L, R]) Swap() Either[R, L] {
+	if e.right {
+		return Left[R, L](e.rv)
+	}
+	return Right[R, L](e.lv)
+}
+
+func (e *either[L, R]) Slice() []R {
+	return monad.FoldBool[R, []R](e.Fetch)(
+		ValueFunc([]R{}),
+		func(r R) []R { return []R {r}},
 	)
 }
 

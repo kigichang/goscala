@@ -19,14 +19,14 @@ func noneErr[T any](err error) goscala.Option[T] {
 	panic("can not make None with nil error")
 }
 
-func MakeWithBool[T any](v T, ok bool) goscala.Option[T] {
+func Bool[T any](v T, ok bool) goscala.Option[T] {
 	return monad.FoldBool[T, goscala.Option[T]](goscala.ValueBoolFunc(v, ok))(
 		goscala.None[T], 
 		goscala.Some[T],
 	)
 }
 
-func MakeWithErr[T any](v T, err error) goscala.Option[T] {
+func Err[T any](v T, err error) goscala.Option[T] {
 	return monad.FoldErr[T, goscala.Option[T]](goscala.ValueErrFunc(v, err))(noneErr[T], goscala.Some[T])
 }
 
@@ -54,7 +54,7 @@ func Collect[T any, U any](opt goscala.Option[T]) func(func(T) (U, bool)) goscal
 	return func(fn func(T) (U, bool)) goscala.Option[U] {
 		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
 			goscala.None[U],
-			monad.FuncBoolAndThen[T, U, goscala.Option[U]](fn)(MakeWithBool[U]),
+			monad.FuncBoolAndThen[T, U, goscala.Option[U]](fn)(Bool[U]),
 		)
 	}
 }
