@@ -1,36 +1,49 @@
 package monad
 
+//func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
+//	return func(z func(C) U, f func(T) U) U {
+//		var v T
+//		var c C
+//		v, c = fetch()
+//		
+//		var x interface{} = c
+//		ok := false
+//		switch xv := x.(type) {
+//		case bool:
+//			ok = xv
+//		default:
+//			ok = (xv == nil)
+//		}
+//
+//
+//		if ok {
+//			return f(v)
+//		}
+//		return z(c)
+//	}
+//}
 
+//func FoldBool[T, U any](fetch func() (T, bool)) func(func(bool) U, func(T) U) U {
+//	return Fold[T, bool, U](fetch)
+//}
 
-func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
-	return func(z func(C) U, f func(T) U) U {
-		var v T
-		var c C
-		v, c = fetch()
-		
-		var x interface{} = c
-		ok := false
-		switch xv := x.(type) {
-		case bool:
-			ok = xv
-		default:
-			ok = (xv == nil)
-		}
-
-
-		if ok {
+func FoldBool[T, U any](fetch func() (T, bool)) func(func() U, func(T) U) U {
+	return func(z func() U, f func(T) U) U {
+		if v, ok := fetch(); ok {
 			return f(v)
 		}
-		return z(c)
+		return z()
 	}
 }
 
-func FoldBool[T, U any](fetch func() (T, bool)) func(func(bool) U, func(T) U) U {
-	return Fold[T, bool, U](fetch)
-}
-
 func FoldErr[T, U any](fetch func() (T, error)) func(func(error) U, func(T) U) U {
-	return Fold[T, error, U](fetch)
+	return func(z func(error) U, f func(T) U) U {
+		v, err := fetch()
+		if err == nil {
+			return f(v)
+		}
+		return z(err)
+	}
 }
 
 func FoldLeft[T, U any](s []T) func(U) func(func(U, T) U) U {

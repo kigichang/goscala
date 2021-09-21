@@ -6,19 +6,37 @@ func TypeStr(x interface{}) string {
 	return reflect.TypeOf(x).String()
 }
 
-func Fetch[T any](v T) func() T {
+//func Fetch[T any](v T) func() T {
+//	return func() T {
+//		return v
+//	}
+//}
+//
+//func FetchBool[T any](v T, ok bool) func() (T, bool) {
+//	return func() (T, bool) {
+//		return v, ok
+//	}
+//}
+//
+//func FetchErr[T any](v T, err error) func() (T, error) {
+//	return func() (T, error) {
+//		return v, err
+//	}
+//}
+
+func ValueFunc[T any](v T) func() T {
 	return func() T {
 		return v
 	}
 }
 
-func FetchBool[T any](v T, ok bool) func() (T, bool) {
+func ValueBoolFunc[T any](v T, ok bool) func() (T, bool) {
 	return func() (T, bool) {
 		return v, ok
 	}
 }
 
-func FetchErr[T any](v T, err error) func() (T, error) {
+func ValueErrFunc[T any](v T, err error) func() (T, error) {
 	return func() (T, error) {
 		return v, err
 	}
@@ -88,3 +106,19 @@ func C[T any](flag bool, a, b T) T {
 //	}
 //	return b
 //}
+
+
+func Ternary[T any](cond func() bool, succ func() T, fail func() T) T {
+	if cond() {
+		return succ()
+	}
+	return fail()
+}
+
+func True() bool {
+	return true
+}
+
+func False() bool {
+	return false
+}

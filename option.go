@@ -61,25 +61,21 @@ func (opt *option[T]) Get() T {
 
 func (opt *option[T]) GetOrElse(z T) T {
 	return monad.FoldBool[T, T](opt.Fetch)(
-		func(_ bool) T {
-			return z
-		},
+		ValueFunc[T](z),
 		Id[T],
 	)
 }
 
 func (opt *option[T]) OrElse(z Option[T]) Option[T] {
-	return monad.Fold[T, bool, Option[T]](opt.Fetch)(
-		func(_ bool) Option[T] {
-			return z
-		},
+	return monad.FoldBool[T, Option[T]](opt.Fetch)(
+		ValueFunc(z),
 		Some[T],
 	)
 }
 
 func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
 	return func(v T) bool {
-		return monad.Fold[T, bool, bool](opt.Fetch)(Id[bool], func(x T) bool { return eq(v, x) })
+		return monad.FoldBool[T, bool](opt.Fetch)(False, func(x T) bool { return eq(v, x) })
 	}
 }
 
@@ -91,9 +87,7 @@ func (opt *option[T]) Exists(p func(T) bool) bool {
 func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 	return func(that Option[T]) bool {
 		return monad.FoldBool[T, bool](opt.Fetch)(
-			func (_ bool) bool {
-				return that.IsEmpty()
-			},
+			that.IsEmpty,
 			func(x T) bool {
 				return that.IsDefined() && eq(that.Get(), x)
 			},
@@ -103,9 +97,7 @@ func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 
 func (opt *option[T]) Filter(p func(T) bool) Option[T] {
 	return monad.FoldBool[T, Option[T]](opt.Fetch)(
-		func (_ bool) Option[T] {
-			return None[T]()
-		},
+		None[T],
 		func(x T) Option[T] {
 			if p(x) {
 				return opt
@@ -123,18 +115,14 @@ func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
 
 func (opt *option[T]) Forall(p func(T) bool) bool {
 	return monad.FoldBool[T, bool](opt.Fetch)(
-		func(_ bool) bool {
-			return true
-		},
+		True,
 		p,
 	)
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
 	monad.FoldBool[T, bool](opt.Fetch)(
-		func(_ bool) bool {
-			return true
-		},
+		True,
 		func(x T) bool {
 			f(x)
 			return true
@@ -144,9 +132,7 @@ func (opt *option[T]) Foreach(f func(T)) {
 
 func (opt *option[T]) Slice() []T {
 	return monad.FoldBool[T, []T](opt.Fetch)(
-		func(_ bool) []T {
-			return []T{}
-		},
+		ValueFunc([]T{}),
 		func (x T) []T {
 			return []T{x}
 		},

@@ -20,17 +20,20 @@ func noneErr[T any](err error) goscala.Option[T] {
 }
 
 func MakeWithBool[T any](v T, ok bool) goscala.Option[T] {
-	return monad.FoldBool[T, goscala.Option[T]](goscala.FetchBool(v, ok))(noneBool[T], goscala.Some[T])
+	return monad.FoldBool[T, goscala.Option[T]](goscala.ValueBoolFunc(v, ok))(
+		goscala.None[T], 
+		goscala.Some[T],
+	)
 }
 
 func MakeWithErr[T any](v T, err error) goscala.Option[T] {
-	return monad.FoldErr[T, goscala.Option[T]](goscala.FetchErr(v, err))(noneErr[T], goscala.Some[T])
+	return monad.FoldErr[T, goscala.Option[T]](goscala.ValueErrFunc(v, err))(noneErr[T], goscala.Some[T])
 }
 
 func When[T any](cond func() bool, v T) goscala.Option[T] {
 	return monad.FoldBool[T, goscala.Option[T]](func() (T, bool) {
 		return v, cond()
-	})(noneBool[T], goscala.Some[T])
+	})(goscala.None[T], goscala.Some[T])
 }
 
 func Unless[T any](cond func() bool, v T) goscala.Option[T] {
@@ -40,7 +43,7 @@ func Unless[T any](cond func() bool, v T) goscala.Option[T] {
 func Collect[T any, U any](opt goscala.Option[T]) func(func(T) (U, bool)) goscala.Option[U] {
 	return func(fn func(T) (U, bool)) goscala.Option[U] {
 		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
-			noneBool[U],
+			goscala.None[U],
 			monad.FuncBoolAndThen[T, U, goscala.Option[U]](fn)(MakeWithBool[U]),
 		)
 	}
@@ -49,7 +52,7 @@ func Collect[T any, U any](opt goscala.Option[T]) func(func(T) (U, bool)) goscal
 func FlatMap[T, U any](opt goscala.Option[T]) func(func(T) goscala.Option[U]) goscala.Option[U] {
 	return func(fn func(T) goscala.Option[U]) goscala.Option[U] {
 		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
-			noneBool[U],
+			goscala.None[U],
 			fn,
 		)
 	}
@@ -58,7 +61,7 @@ func FlatMap[T, U any](opt goscala.Option[T]) func(func(T) goscala.Option[U]) go
 func Map[T, U any](opt goscala.Option[T]) func(func(T) U) goscala.Option[U] {
 	return func(fn func(T) U) goscala.Option[U] {
 		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
-			noneBool[U],
+			goscala.None[U],
 			monad.FuncAndThen[T, U, goscala.Option[U]](fn)(goscala.Some[U]),
 		)
 	}
@@ -68,9 +71,7 @@ func Fold[T, U any](opt goscala.Option[T]) func(U) func(func(T) U) U {
 	return func(z U) func(func(T) U) U {
 		return func (fn func(T) U) U {
 			return monad.FoldBool[T, U](opt.Fetch)(
-				func(_ bool) U {
-					return z
-				},
+				goscala.ValueFunc(z),
 				fn,
 			)
 		}

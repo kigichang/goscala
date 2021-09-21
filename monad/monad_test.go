@@ -31,14 +31,14 @@ func TestFoldBool(t *testing.T) {
 		return 0, false
 	}
 
-	z := func(bool) string {
+	z := func() string {
 		return "false"
 	}
 
-	result := monad.Fold[int, bool, string](fetch1)(z, strconv.Itoa)
+	result := monad.FoldBool[int, string](fetch1)(z, strconv.Itoa)
 	assert.Equal(t, "100", result)
 	
-	result = monad.Fold[int, bool, string](fetch2)(z, strconv.Itoa)
+	result = monad.FoldBool[int, string](fetch2)(z, strconv.Itoa)
 	assert.Equal(t, "false", result)
 }
 
@@ -55,10 +55,10 @@ func TestFoldErr(t *testing.T) {
 		return err.Error()
 	}
 
-	result := monad.Fold[int, error, string](fetch1)(z, strconv.Itoa)
+	result := monad.FoldErr[int, string](fetch1)(z, strconv.Itoa)
 	assert.Equal(t, "100", result)
 	
-	result = monad.Fold[int, error, string](fetch2)(z, strconv.Itoa)
+	result = monad.FoldErr[int, string](fetch2)(z, strconv.Itoa)
 	assert.Equal(t, "0", result)
 }
 
