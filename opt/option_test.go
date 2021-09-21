@@ -104,3 +104,33 @@ func TestOptionCollect(t *testing.T) {
 	ans = opt.Collect[int, string](o)(p)
 	assert.Equal(t, false, ans.IsDefined())
 }
+
+func TestOptionToLeft(t *testing.T) {
+	v1 := 1
+	v2 := "abc"
+	o := goscala.Some[int](v1)
+
+	e := opt.Left[int, string](o)(v2)
+	assert.True(t, e.IsLeft())
+	assert.Equal(t, v1, e.Left())
+
+	o = goscala.None[int]()
+	e = opt.Left[int, string](o)(v2)
+	assert.True(t, e.IsRight())
+	assert.Equal(t, v2, e.Right())
+}
+
+func TestOptionRight(t *testing.T) {
+	v1 := 1
+	v2 := "abc"
+	o := goscala.Some[int](v1)
+
+	e := opt.Right[string, int](o)(v2)
+	assert.True(t, e.IsRight())
+	assert.Equal(t, v1, e.Right())
+
+	o = goscala.None[int]()
+	e = opt.Right[string, int](o)(v2)
+	assert.True(t, e.IsLeft())
+	assert.Equal(t, v2, e.Left())
+}

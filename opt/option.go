@@ -5,13 +5,13 @@ import (
 	"github.com/kigichang/goscala/monad"
 )
 
-func noneBool[T any](b bool) goscala.Option[T] {
-	if !b {
-		return goscala.None[T]()
-	}
-	panic("can not make None with true")
-}
-
+//func noneBool[T any](b bool) goscala.Option[T] {
+//	if !b {
+//		return goscala.None[T]()
+//	}
+//	panic("can not make None with true")
+//}
+//
 func noneErr[T any](err error) goscala.Option[T] {
 	if err != nil {
 		return goscala.None[T]()
@@ -77,3 +77,22 @@ func Fold[T, U any](opt goscala.Option[T]) func(U) func(func(T) U) U {
 		}
 	}
 }
+
+func Left[T, R any](opt goscala.Option[T]) func(R) goscala.Either[T, R] {
+	return func(z R) goscala.Either[T, R] {
+		return monad.FoldBool[T, goscala.Either[T, R]](opt.Fetch)(
+			goscala.ValueFunc(goscala.Right[T, R](z)),
+			goscala.Left[T, R],
+		)
+	}
+}
+
+func Right[L, T any](opt goscala.Option[T]) func(L) goscala.Either[L, T] {
+	return func(z L) goscala.Either[L, T] {
+		return monad.FoldBool[T, goscala.Either[L, T]](opt.Fetch)(
+			goscala.ValueFunc(goscala.Left[L, T](z)),
+			goscala.Right[L, T],
+		)
+	}
+}
+
