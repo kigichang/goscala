@@ -136,6 +136,14 @@ func FuncAndThen[T, R, U any](f func(T) R) func(func(R) U) func(T) U {
 	}
 }
 
+func FuncUnitAndThen[R, U any](f func() R) func(func(R) U) func() U {
+	return func(g func(R) U) func() U {
+		return func() U {
+			return g(f())
+		}
+	}
+}
+
 func FuncBoolAndThen[T, R, U any](f func(T) (R, bool)) func(func (R, bool) U) func (T) U {
 	return func(g func(R, bool) U) func(T) U {
 		return func(v T) U {

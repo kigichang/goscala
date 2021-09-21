@@ -30,14 +30,24 @@ func MakeWithErr[T any](v T, err error) goscala.Option[T] {
 	return monad.FoldErr[T, goscala.Option[T]](goscala.ValueErrFunc(v, err))(noneErr[T], goscala.Some[T])
 }
 
-func When[T any](cond func() bool, v T) goscala.Option[T] {
-	return monad.FoldBool[T, goscala.Option[T]](func() (T, bool) {
-		return v, cond()
-	})(goscala.None[T], goscala.Some[T])
+func When[T any](cond func() bool) func(T) goscala.Option[T] {
+	return func(z T) goscala.Option[T] {
+		return goscala.Ternary(
+			cond, 
+			monad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
+			goscala.None[T],
+		)
+	}
 }
 
-func Unless[T any](cond func() bool, v T) goscala.Option[T] {
-	return When[T](func() bool { return !cond() }, v)
+func Unless[T any](cond func() bool) func(T) goscala.Option[T] {
+	return func(z T) goscala.Option[T] {
+		return goscala.Ternary(
+			func() bool { return !cond() }, 
+			monad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
+			goscala.None[T],
+		)
+	}
 }
 
 func Collect[T any, U any](opt goscala.Option[T]) func(func(T) (U, bool)) goscala.Option[U] {
