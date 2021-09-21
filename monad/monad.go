@@ -1,31 +1,27 @@
 package monad
 
-//func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
-//	return func(z func(C) U, f func(T) U) U {
-//		var v T
-//		var c C
-//		v, c = fetch()
-//		
-//		var x interface{} = c
-//		ok := false
-//		switch xv := x.(type) {
-//		case bool:
-//			ok = xv
-//		default:
-//			ok = (xv == nil)
-//		}
-//
-//
-//		if ok {
-//			return f(v)
-//		}
-//		return z(c)
-//	}
-//}
+func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
+	return func(z func(C) U, f func(T) U) U {
+		var v T
+		var c C
+		v, c = fetch()
+		
+		var x interface{} = c
+		ok := false
+		switch xv := x.(type) {
+		case bool:
+			ok = xv
+		default:
+			ok = (xv == nil)
+		}
 
-//func FoldBool[T, U any](fetch func() (T, bool)) func(func(bool) U, func(T) U) U {
-//	return Fold[T, bool, U](fetch)
-//}
+
+		if ok {
+			return f(v)
+		}
+		return z(c)
+	}
+}
 
 func FoldBool[T, U any](fetch func() (T, bool)) func(func() U, func(T) U) U {
 	return func(z func() U, f func(T) U) U {
