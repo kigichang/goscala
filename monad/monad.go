@@ -1,5 +1,7 @@
 package monad
 
+
+
 func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
 	return func(z func(C) U, f func(T) U) U {
 		var v T
@@ -21,6 +23,14 @@ func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
 		}
 		return z(c)
 	}
+}
+
+func FoldBool[T, U any](fetch func() (T, bool)) func(func(bool) U, func(T) U) U {
+	return Fold[T, bool, U](fetch)
+}
+
+func FoldErr[T, U any](fetch func() (T, error)) func(func(error) U, func(T) U) U {
+	return Fold[T, error, U](fetch)
 }
 
 func FoldLeft[T, U any](s []T) func(U) func(func(U, T) U) U {
@@ -94,5 +104,29 @@ func FlatMap[T, U any](s []T) func(func(T) []U) []U {
 			z = append(z, fn(a)...)
 			return z
 		})
+	}
+}
+
+func FuncCompose[T, A, R any](f func(T) R) func(func(A) T) func(A) R {
+	return func(g func(A) T) func(A) R {
+		return func(v A) R {
+			return f(g(v))
+		}
+	}
+}
+
+func FuncAndThen[T, R, U any](f func(T) R) func(func(R) U) func(T) U {
+	return func(g func(R) U) func(T) U {
+		return func(v T) U {
+			return g(f(v))
+		}
+	}
+}
+
+func FuncBoolAndThen[T, R, U any](f func(T) (R, bool)) func(func (R, bool) U) func (T) U {
+	return func(g func(R, bool) U) func(T) U {
+		return func(v T) U {
+			return g(f(v))
+		}
 	}
 }

@@ -29,3 +29,18 @@ func Min[T Ordered](a, b T) T {
 	}
 	return b
 }
+
+func Ternary[T any](cond func() bool, succ func() T, fail func() T) T {
+	if cond() {
+		return succ()
+	}
+	return fail()
+}
+
+func True() bool {
+	return true
+}
+
+func False() bool {
+	return false
+}

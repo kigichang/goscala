@@ -260,6 +260,7 @@ func TestOptionGetOrElse(t *testing.T) {
 	assert.Equal(t, -1, n.GetOrElse(-1))
 }
 
+
 func TestOptionMap(t *testing.T) {
 	s := Some[int](100)
 	f := func(v int) string {
