@@ -2,6 +2,7 @@ package goscala
 
 import (
 	"fmt"
+
 	"github.com/kigichang/goscala/monad"
 )
 
@@ -14,6 +15,10 @@ type Either[L, R any] interface {
 	Left() L
 	Right() R
 	Option() Option[R]
+	Exists(func(R) bool) bool
+	FilterOrElse(func(R) bool, L) Either[L, R]
+	Forall(func(R) bool) bool
+	Foreach(func(R))
 }
 
 type either[L, R any] struct {
@@ -65,6 +70,39 @@ func (e *either[L, R]) Option() Option[R] {
 	return monad.FoldBool[R, Option[R]](e.Fetch)(
 		None[R],
 		Some[R],
+	)
+}
+
+func (e *either[L, R]) Exists(p func(R) bool) bool {
+	return monad.FoldBool[R, bool](e.Fetch)(
+		False,
+		p,
+	)
+}
+
+func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
+	return monad.FoldBool[R, Either[L, R]](e.Fetch)(
+		ValueFunc(Either[L, R](e)),
+		func(r R) Either[L, R] {
+			if p(r) {
+				return e
+			}
+			return Left[L, R](z)
+		},
+	)
+}
+
+func (e *either[L, R]) Forall(p func(R) bool) bool {
+	return monad.FoldBool[R, bool](e.Fetch)(
+		True,
+		p,
+	)
+}
+
+func (e *either[L, R]) Foreach(fn func(R)) {
+	monad.FoldBool[R, Unit](e.Fetch)(
+		UnitFunc,
+		UnitWrap(fn),
 	)
 }
 

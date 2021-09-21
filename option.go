@@ -121,12 +121,9 @@ func (opt *option[T]) Forall(p func(T) bool) bool {
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
-	monad.FoldBool[T, bool](opt.Fetch)(
-		True,
-		func(x T) bool {
-			f(x)
-			return true
-		},
+	monad.FoldBool[T, Unit](opt.Fetch)(
+		UnitFunc,
+		UnitWrap(f),
 	)
 }
 
