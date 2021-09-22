@@ -14,7 +14,7 @@ type Either[L, R any] interface {
 	Get() R
 	Left() L
 	Right() R
-	Option() Option[R]
+	
 	Exists(func(R) bool) bool
 	FilterOrElse(func(R) bool, L) Either[L, R]
 	Forall(func(R) bool) bool
@@ -22,7 +22,9 @@ type Either[L, R any] interface {
 	GetOrElse(R) R
 	OrElse(Either[L, R]) Either[L, R]
 	Swap() Either[R, L]
+	Option() Option[R]
 	Slice() []R
+	//Try() Try[R]
 }
 
 type either[L, R any] struct {
@@ -42,6 +44,10 @@ func (e *either[L, R]) String() string {
 
 func (e *either[L, R]) Fetch() (R, bool) {
 	return e.rv, e.right
+}
+
+func (e *either[L, R]) fetchAll() (R, L) {
+	return e.rv, e.lv
 }
 
 func (e *either[L, R]) IsRight() bool {
@@ -133,12 +139,35 @@ func (e *either[L, R]) Swap() Either[R, L] {
 
 func (e *either[L, R]) Slice() []R {
 	return monad.FoldBool[R, []R](e.Fetch)(
-		ValueFunc([]R{}),
-		func(r R) []R { return []R {r}},
+		monad.EmptySlice[R],
+		monad.ElemSlice[R],
 	)
 }
 
+//func (e *either[L, R]) try() *try[R] {
+//	if e.right {
+//		return success[R](e.rv)
+//	}
+//
+//	var x interface{} = e.lv
+//	switch v := x.(type) {
+//	case error:
+//		return failure[R](v)
+//	default:
+//		return failure[R](fmt.Errorf(`%v`, v))
+//	}
+//
+//}
+//
+//func (e *either[L, R]) Try() Try[R] {
+//	return e.try()
+//}
+
 func Left[L, R any](v L) Either[L, R] {
+	return left[L, R](v)
+}
+
+func left[L, R any](v L) *either[L, R] {
 	return &either[L, R]{
 		right: false,
 		lv:    v,
@@ -146,6 +175,10 @@ func Left[L, R any](v L) Either[L, R] {
 }
 
 func Right[L, R any](v R) Either[L, R] {
+	return right[L, R](v)
+}
+
+func right[L, R any](v R) *either[L, R] {
 	return &either[L, R]{
 		right: true,
 		rv:    v,

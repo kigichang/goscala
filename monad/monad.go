@@ -15,7 +15,6 @@ func Fold[T, C, U any](fetch func() (T, C)) func(func(C) U, func(T) U) U {
 			ok = (xv == nil)
 		}
 
-
 		if ok {
 			return f(v)
 		}

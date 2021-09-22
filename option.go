@@ -129,10 +129,8 @@ func (opt *option[T]) Foreach(f func(T)) {
 
 func (opt *option[T]) Slice() []T {
 	return monad.FoldBool[T, []T](opt.Fetch)(
-		ValueFunc([]T{}),
-		func (x T) []T {
-			return []T{x}
-		},
+		monad.EmptySlice[T],
+		monad.ElemSlice[T],
 	)
 }
 
