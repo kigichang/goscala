@@ -24,7 +24,7 @@ type Either[L, R any] interface {
 	Swap() Either[R, L]
 	Option() Option[R]
 	Slice() []R
-	//Try() Try[R]
+	// Try() Try[R]
 }
 
 type either[L, R any] struct {
