@@ -62,7 +62,7 @@ func MFoldRight[T, U any](s []T, z U, fn func(T, U) U) U {
 
 func MScanRight[T, U any](s []T, z U, fn func(T, U) U) []U {
 	
-	result := FoldRight[T, []U](s)([]U{z})(func(a T, b []U) []U {
+	result := MFoldRight[T, []U](s, []U{z}, func(a T, b []U) []U {
 		return append(b, fn(a, b[len(b) - 1]))
 	})
 
