@@ -2,10 +2,11 @@ package opt_test
 
 import (
 	"fmt"
-	"testing"
 	"strconv"
+	"testing"
+
+	"github.com/kigichang/gomonad"
 	"github.com/kigichang/goscala"
-	"github.com/kigichang/goscala/monad"
 	"github.com/kigichang/goscala/opt"
 	"github.com/stretchr/testify/assert"
 )
@@ -61,12 +62,11 @@ func TestMap(t *testing.T) {
 	assert.False(t, s1.IsDefined())
 }
 
-
 func TestFlatMap(t *testing.T) {
 	s := goscala.Some[int](100)
 
-	f := monad.FuncAndThen[int, string, goscala.Option[string]](strconv.Itoa)(goscala.Some[string])
-	
+	f := gomonad.FuncAndThen[int, string, goscala.Option[string]](strconv.Itoa)(goscala.Some[string])
+
 	s1 := opt.FlatMap[int, string](s)(f)
 	assert.Equal(t, true, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
@@ -144,11 +144,10 @@ func TestWhen(t *testing.T) {
 	assert.False(t, o.IsDefined())
 }
 
-
 func TestUnless(t *testing.T) {
 	o := opt.Unless[int](goscala.True)(100)
 	assert.False(t, o.IsDefined())
-	
+
 	o = opt.Unless[int](goscala.False)(0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())

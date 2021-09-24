@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kigichang/goscala/monad"
+	"github.com/kigichang/gomonad"
 )
 
 type Try[T any] interface {
@@ -23,7 +23,7 @@ type Try[T any] interface {
 }
 
 type try[T any] struct {
-	v T
+	v   T
 	err error
 }
 
@@ -75,7 +75,7 @@ func (t *try[T]) fetchErr() (T, error) {
 
 func (t *try[T]) Equals(eq func(T, T) bool) func(Try[T]) bool {
 	return func(that Try[T]) bool {
-		return monad.FoldErr[T, bool](t.fetchErr)(
+		return gomonad.FoldErr[T, bool](t.fetchErr)(
 			func(err error) bool {
 				return that.IsFailure() && errors.Is(err, that.Failed())
 			},
@@ -91,7 +91,7 @@ func (t *try[T]) Get() T {
 }
 
 func (t *try[T]) Option() Option[T] {
-	return monad.FoldBool[T, Option[T]](t.Fetch)(
+	return gomonad.FoldBool[T, Option[T]](t.Fetch)(
 		None[T],
 		Some[T],
 	)
@@ -102,15 +102,15 @@ func (t *try[T]) Either() Either[error, T] {
 }
 
 func (t *try[T]) Slice() []T {
-	return monad.FoldBool[T, []T](t.Fetch)(
-		monad.EmptySlice[T],
-		monad.ElemSlice[T],
+	return gomonad.FoldBool[T, []T](t.Fetch)(
+		gomonad.EmptySlice[T],
+		gomonad.ElemSlice[T],
 	)
 }
 
 func success[T any](v T) *try[T] {
-	return &try[T] {
-		v: v,
+	return &try[T]{
+		v:   v,
 		err: nil,
 	}
 }
@@ -124,7 +124,7 @@ func failure[T any](err error) *try[T] {
 		panic(fmt.Errorf("can not fail with nil error"))
 	}
 
-	return &try[T] {
+	return &try[T]{
 		err: err,
 	}
 }

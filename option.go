@@ -3,7 +3,7 @@ package goscala
 import (
 	"fmt"
 
-	"github.com/kigichang/goscala/monad"
+	"github.com/kigichang/gomonad"
 )
 
 type Option[T any] interface {
@@ -60,14 +60,14 @@ func (opt *option[T]) Get() T {
 }
 
 func (opt *option[T]) GetOrElse(z T) T {
-	return monad.FoldBool[T, T](opt.Fetch)(
+	return gomonad.FoldBool[T, T](opt.Fetch)(
 		ValueFunc[T](z),
 		Id[T],
 	)
 }
 
 func (opt *option[T]) OrElse(z Option[T]) Option[T] {
-	return monad.FoldBool[T, Option[T]](opt.Fetch)(
+	return gomonad.FoldBool[T, Option[T]](opt.Fetch)(
 		ValueFunc(z),
 		Some[T],
 	)
@@ -75,18 +75,18 @@ func (opt *option[T]) OrElse(z Option[T]) Option[T] {
 
 func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
 	return func(v T) bool {
-		return monad.FoldBool[T, bool](opt.Fetch)(False, func(x T) bool { return eq(v, x) })
+		return gomonad.FoldBool[T, bool](opt.Fetch)(False, func(x T) bool { return eq(v, x) })
 	}
 }
 
 func (opt *option[T]) Exists(p func(T) bool) bool {
-	//return monad.Fold[T, bool, bool](opt.Fetch)(Id[bool], p)
+	//return gomonad.Fold[T, bool, bool](opt.Fetch)(Id[bool], p)
 	return opt.Filter(p).IsDefined()
 }
 
 func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 	return func(that Option[T]) bool {
-		return monad.FoldBool[T, bool](opt.Fetch)(
+		return gomonad.FoldBool[T, bool](opt.Fetch)(
 			that.IsEmpty,
 			func(x T) bool {
 				return that.IsDefined() && eq(that.Get(), x)
@@ -96,7 +96,7 @@ func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 }
 
 func (opt *option[T]) Filter(p func(T) bool) Option[T] {
-	return monad.FoldBool[T, Option[T]](opt.Fetch)(
+	return gomonad.FoldBool[T, Option[T]](opt.Fetch)(
 		None[T],
 		func(x T) Option[T] {
 			if p(x) {
@@ -114,23 +114,23 @@ func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
 }
 
 func (opt *option[T]) Forall(p func(T) bool) bool {
-	return monad.FoldBool[T, bool](opt.Fetch)(
+	return gomonad.FoldBool[T, bool](opt.Fetch)(
 		True,
 		p,
 	)
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
-	monad.FoldBool[T, Unit](opt.Fetch)(
+	gomonad.FoldBool[T, Unit](opt.Fetch)(
 		UnitFunc,
 		UnitWrap(f),
 	)
 }
 
 func (opt *option[T]) Slice() []T {
-	return monad.FoldBool[T, []T](opt.Fetch)(
-		monad.EmptySlice[T],
-		monad.ElemSlice[T],
+	return gomonad.FoldBool[T, []T](opt.Fetch)(
+		gomonad.EmptySlice[T],
+		gomonad.ElemSlice[T],
 	)
 }
 

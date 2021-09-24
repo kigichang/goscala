@@ -1,8 +1,8 @@
 package opt
 
 import (
+	"github.com/kigichang/gomonad"
 	"github.com/kigichang/goscala"
-	"github.com/kigichang/goscala/monad"
 )
 
 //func noneBool[T any](b bool) goscala.Option[T] {
@@ -20,21 +20,21 @@ func noneErr[T any](err error) goscala.Option[T] {
 }
 
 func Bool[T any](v T, ok bool) goscala.Option[T] {
-	return monad.FoldBool[T, goscala.Option[T]](goscala.ValueBoolFunc(v, ok))(
-		goscala.None[T], 
+	return gomonad.FoldBool[T, goscala.Option[T]](goscala.ValueBoolFunc(v, ok))(
+		goscala.None[T],
 		goscala.Some[T],
 	)
 }
 
 func Err[T any](v T, err error) goscala.Option[T] {
-	return monad.FoldErr[T, goscala.Option[T]](goscala.ValueErrFunc(v, err))(noneErr[T], goscala.Some[T])
+	return gomonad.FoldErr[T, goscala.Option[T]](goscala.ValueErrFunc(v, err))(noneErr[T], goscala.Some[T])
 }
 
 func When[T any](cond func() bool) func(T) goscala.Option[T] {
 	return func(z T) goscala.Option[T] {
 		return goscala.Ternary(
-			cond, 
-			monad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
+			cond,
+			gomonad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
 			goscala.None[T],
 		)
 	}
@@ -43,8 +43,8 @@ func When[T any](cond func() bool) func(T) goscala.Option[T] {
 func Unless[T any](cond func() bool) func(T) goscala.Option[T] {
 	return func(z T) goscala.Option[T] {
 		return goscala.Ternary(
-			func() bool { return !cond() }, 
-			monad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
+			func() bool { return !cond() },
+			gomonad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
 			goscala.None[T],
 		)
 	}
@@ -52,16 +52,16 @@ func Unless[T any](cond func() bool) func(T) goscala.Option[T] {
 
 func Collect[T any, U any](opt goscala.Option[T]) func(func(T) (U, bool)) goscala.Option[U] {
 	return func(fn func(T) (U, bool)) goscala.Option[U] {
-		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
+		return gomonad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
 			goscala.None[U],
-			monad.FuncBoolAndThen[T, U, goscala.Option[U]](fn)(Bool[U]),
+			gomonad.FuncBoolAndThen[T, U, goscala.Option[U]](fn)(Bool[U]),
 		)
 	}
 }
 
 func FlatMap[T, U any](opt goscala.Option[T]) func(func(T) goscala.Option[U]) goscala.Option[U] {
 	return func(fn func(T) goscala.Option[U]) goscala.Option[U] {
-		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
+		return gomonad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
 			goscala.None[U],
 			fn,
 		)
@@ -70,17 +70,17 @@ func FlatMap[T, U any](opt goscala.Option[T]) func(func(T) goscala.Option[U]) go
 
 func Map[T, U any](opt goscala.Option[T]) func(func(T) U) goscala.Option[U] {
 	return func(fn func(T) U) goscala.Option[U] {
-		return monad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
+		return gomonad.FoldBool[T, goscala.Option[U]](opt.Fetch)(
 			goscala.None[U],
-			monad.FuncAndThen[T, U, goscala.Option[U]](fn)(goscala.Some[U]),
+			gomonad.FuncAndThen[T, U, goscala.Option[U]](fn)(goscala.Some[U]),
 		)
 	}
 }
 
 func Fold[T, U any](opt goscala.Option[T]) func(U) func(func(T) U) U {
 	return func(z U) func(func(T) U) U {
-		return func (fn func(T) U) U {
-			return monad.FoldBool[T, U](opt.Fetch)(
+		return func(fn func(T) U) U {
+			return gomonad.FoldBool[T, U](opt.Fetch)(
 				goscala.ValueFunc(z),
 				fn,
 			)
@@ -90,7 +90,7 @@ func Fold[T, U any](opt goscala.Option[T]) func(U) func(func(T) U) U {
 
 func Left[T, R any](opt goscala.Option[T]) func(R) goscala.Either[T, R] {
 	return func(z R) goscala.Either[T, R] {
-		return monad.FoldBool[T, goscala.Either[T, R]](opt.Fetch)(
+		return gomonad.FoldBool[T, goscala.Either[T, R]](opt.Fetch)(
 			goscala.ValueFunc(goscala.Right[T, R](z)),
 			goscala.Left[T, R],
 		)
@@ -99,10 +99,9 @@ func Left[T, R any](opt goscala.Option[T]) func(R) goscala.Either[T, R] {
 
 func Right[L, T any](opt goscala.Option[T]) func(L) goscala.Either[L, T] {
 	return func(z L) goscala.Either[L, T] {
-		return monad.FoldBool[T, goscala.Either[L, T]](opt.Fetch)(
+		return gomonad.FoldBool[T, goscala.Either[L, T]](opt.Fetch)(
 			goscala.ValueFunc(goscala.Left[L, T](z)),
 			goscala.Right[L, T],
 		)
 	}
 }
-

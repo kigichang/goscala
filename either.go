@@ -3,7 +3,7 @@ package goscala
 import (
 	"fmt"
 
-	"github.com/kigichang/goscala/monad"
+	"github.com/kigichang/gomonad"
 )
 
 type Either[L, R any] interface {
@@ -14,7 +14,7 @@ type Either[L, R any] interface {
 	Get() R
 	Left() L
 	Right() R
-	
+
 	Exists(func(R) bool) bool
 	FilterOrElse(func(R) bool, L) Either[L, R]
 	Forall(func(R) bool) bool
@@ -77,21 +77,21 @@ func (e *either[L, R]) Get() R {
 }
 
 func (e *either[L, R]) Option() Option[R] {
-	return monad.FoldBool[R, Option[R]](e.Fetch)(
+	return gomonad.FoldBool[R, Option[R]](e.Fetch)(
 		None[R],
 		Some[R],
 	)
 }
 
 func (e *either[L, R]) Exists(p func(R) bool) bool {
-	return monad.FoldBool[R, bool](e.Fetch)(
+	return gomonad.FoldBool[R, bool](e.Fetch)(
 		False,
 		p,
 	)
 }
 
 func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
-	return monad.FoldBool[R, Either[L, R]](e.Fetch)(
+	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
 		ValueFunc(Either[L, R](e)),
 		func(r R) Either[L, R] {
 			if p(r) {
@@ -103,28 +103,28 @@ func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
 }
 
 func (e *either[L, R]) Forall(p func(R) bool) bool {
-	return monad.FoldBool[R, bool](e.Fetch)(
+	return gomonad.FoldBool[R, bool](e.Fetch)(
 		True,
 		p,
 	)
 }
 
 func (e *either[L, R]) Foreach(fn func(R)) {
-	monad.FoldBool[R, Unit](e.Fetch)(
+	gomonad.FoldBool[R, Unit](e.Fetch)(
 		UnitFunc,
 		UnitWrap(fn),
 	)
 }
 
 func (e *either[L, R]) GetOrElse(z R) R {
-	return monad.FoldBool[R, R](e.Fetch)(
+	return gomonad.FoldBool[R, R](e.Fetch)(
 		ValueFunc(z),
 		Id[R],
 	)
 }
 
 func (e *either[L, R]) OrElse(z Either[L, R]) Either[L, R] {
-	return monad.FoldBool[R, Either[L, R]](e.Fetch)(
+	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
 		ValueFunc(z),
 		Right[L, R],
 	)
@@ -138,9 +138,9 @@ func (e *either[L, R]) Swap() Either[R, L] {
 }
 
 func (e *either[L, R]) Slice() []R {
-	return monad.FoldBool[R, []R](e.Fetch)(
-		monad.EmptySlice[R],
-		monad.ElemSlice[R],
+	return gomonad.FoldBool[R, []R](e.Fetch)(
+		gomonad.EmptySlice[R],
+		gomonad.ElemSlice[R],
 	)
 }
 
