@@ -16,6 +16,7 @@ type Try[T any] interface {
 	IsFailure() bool
 	Equals(func(T, T) bool) func(Try[T]) bool
 	Get() T
+	Filter(func(T) bool) Try[T]
 
 	Option() Option[T]
 	//Either() Either[error, T]
@@ -88,6 +89,18 @@ func (t *try[T]) Equals(eq func(T, T) bool) func(Try[T]) bool {
 
 func (t *try[T]) Get() T {
 	return t.Success()
+}
+
+func (t *try[T]) Filter(p func(T) bool) Try[T] {
+	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+		Failure[T],
+		func(v T) Try[T] {
+			if p(v) {
+				return Success[T](v)
+			}
+			return Failure[T](ErrUnsatisfied)
+		},
+	)
 }
 
 func (t *try[T]) Option() Option[T] {

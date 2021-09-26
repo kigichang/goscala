@@ -70,3 +70,26 @@ func TestTryEquals(t *testing.T) {
 	assert.False(t, goscala.Success(100).Equals(goscala.Eq[int])(goscala.Failure[int](goscala.ErrUnsupported)))
 
 }
+
+func TesttrFilter(t *testing.T) {
+	predict := func(v int) bool {
+		return v > 0
+	}
+
+	tr := goscala.Success(1)
+	tr2 := tr.Filter(predict)
+	assert.True(t, tr.IsSuccess())
+	assert.Equal(t, tr.Get(), tr2.Get())
+
+	tr = goscala.Success(-1)
+	tr2 = tr.Filter(predict)
+	assert.True(t, tr2.IsFailure())
+	assert.Equal(t, goscala.ErrUnsatisfied, tr2.Failed())
+
+	err := fmt.Errorf("tr filter error")
+	tr = goscala.Failure[int](err)
+	tr2 = tr.Filter(predict)
+	assert.True(t, tr2.IsFailure())
+	assert.Equal(t, tr.Failed(), tr2.Failed())
+	assert.Equal(t, err, tr2.Failed())
+}

@@ -21,4 +21,5 @@ func UnitWrap[T any](f func(T)) func(T) Unit {
 
 var (
 	ErrUnsupported = fmt.Errorf("unsupported")
+	ErrUnsatisfied = fmt.Errorf("unsatisfied")
 )
