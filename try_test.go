@@ -33,3 +33,40 @@ func TestFailure(t *testing.T) {
 	assert.Equal(t, testErr, tr.Failed())
 	assert.Panics(t, func() { tr.Get() })
 }
+
+func TestTryOption(t *testing.T) {
+	tr := goscala.Success(0)
+	assert.Equal(t, goscala.Some(0).Get(), tr.Option().Get())
+
+	tr = goscala.Failure[int](goscala.ErrUnsupported)
+	assert.False(t, tr.Option().IsDefined())
+}
+
+func TestTrySlice(t *testing.T) {
+	tr := goscala.Success(0)
+	assert.Equal(t, 0, tr.Slice()[0])
+
+	tr = goscala.Failure[int](goscala.ErrUnsupported)
+	assert.Equal(t, 0, len(tr.Slice()))
+}
+
+func TestTryEquals(t *testing.T) {
+	err := fmt.Errorf("%w", goscala.ErrUnsupported)
+
+	tr := goscala.Failure[int](err)
+
+	assert.True(t,
+		tr.Equals(goscala.Equal[int])(
+			goscala.Failure[int](goscala.ErrUnsupported)))
+
+	assert.False(t,
+		tr.Equals(goscala.Eq[int])(goscala.Failure[int](fmt.Errorf("Test"))))
+
+	tr = goscala.Success(100)
+	assert.True(t, tr.Equals(goscala.Eq[int])(goscala.Success(100)))
+	assert.False(t, tr.Equals(goscala.Eq[int])(goscala.Success(101)))
+
+	assert.False(t, goscala.Failure[int](goscala.ErrUnsupported).Equals(goscala.Eq[int])(goscala.Success(100)))
+	assert.False(t, goscala.Success(100).Equals(goscala.Eq[int])(goscala.Failure[int](goscala.ErrUnsupported)))
+
+}
