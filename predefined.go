@@ -1,5 +1,7 @@
 package goscala
 
+import "fmt"
+
 type Fetcher[T any] interface {
 	Fetch() (T, bool)
 }
@@ -16,3 +18,7 @@ func UnitWrap[T any](f func(T)) func(T) Unit {
 		return Unit{}
 	}
 }
+
+var (
+	ErrUnsupported = fmt.Errorf("unsupported")
+)

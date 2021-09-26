@@ -18,7 +18,7 @@ type Try[T any] interface {
 	Get() T
 
 	Option() Option[T]
-	Either() Either[error, T]
+	//Either() Either[error, T]
 	Slice() []T
 }
 
@@ -29,12 +29,12 @@ type try[T any] struct {
 
 var _ Try[int] = &try[int]{}
 
-func (t *try[T]) either() *either[error, T] {
-	if t.err == nil {
-		return right[error, T](t.v)
-	}
-	return left[error, T](t.err)
-}
+//func (t *try[T]) either() *either[error, T] {
+//	if t.err == nil {
+//		return right[error, T](t.v)
+//	}
+//	return left[error, T](t.err)
+//}
 
 func (t *try[T]) String() string {
 	if t.IsSuccess() {
@@ -59,10 +59,10 @@ func (t *try[T]) IsFailure() bool {
 }
 
 func (t *try[T]) Failed() error {
-	if !t.IsFailure() {
+	if t.IsFailure() {
 		return t.err
 	}
-	panic(fmt.Errorf(`can not get failed value from %v`, t))
+	return ErrUnsupported
 }
 
 func (t *try[T]) Fetch() (T, bool) {
@@ -97,9 +97,9 @@ func (t *try[T]) Option() Option[T] {
 	)
 }
 
-func (t *try[T]) Either() Either[error, T] {
-	return t.either()
-}
+//func (t *try[T]) Either() Either[error, T] {
+//	return t.either()
+//}
 
 func (t *try[T]) Slice() []T {
 	return gomonad.FoldBool[T, []T](t.Fetch)(
