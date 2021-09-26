@@ -3,6 +3,7 @@ package goscala_test
 import (
 	"fmt"
 	"testing"
+	"errors"
 
 	"github.com/kigichang/goscala"
 	"github.com/stretchr/testify/assert"
@@ -92,4 +93,77 @@ func TesttrFilter(t *testing.T) {
 	assert.True(t, tr2.IsFailure())
 	assert.Equal(t, tr.Failed(), tr2.Failed())
 	assert.Equal(t, err, tr2.Failed())
+}
+
+func TestTryForeach(t *testing.T) {
+	sum := 1
+	goscala.Success(1).Foreach(func(v int) {
+		sum += 1
+	})
+
+	assert.Equal(t, 1+1, sum)
+
+	sum = 1
+	goscala.Failure[int](goscala.ErrUnsupported).Foreach(func(v int) {
+		sum += 1
+	})
+	assert.Equal(t, 1, sum)
+}
+
+func TestTryGetOrElse(t *testing.T) {
+	assert.Equal(t, 1, goscala.Success(1).GetOrElse(-1))
+	assert.Equal(t, -1, goscala.Failure[int](goscala.ErrUnsatisfied).GetOrElse(-1))
+}
+
+
+func TestTryOrElse(t *testing.T) {
+	ans := goscala.Success(-1)
+	assert.Equal(t, 1, goscala.Success(1).OrElse(ans).Get())
+	assert.Equal(t, -1, goscala.Failure[int](goscala.ErrUnsupported).OrElse(ans).Get())
+}
+
+func TestTryRecover(t *testing.T) {
+	r := func(_ error) (int, bool) {
+		return 0, true
+	}
+
+	assert.Equal(t, 1, goscala.Success(1).Recover(r).Get())
+	assert.Equal(t, 0, goscala.Failure[int](goscala.ErrUnsupported).Recover(r).Get())
+
+	r = func(err error) (a int, ok bool) {
+		if ok = errors.Is(err, goscala.ErrUnsupported); ok {
+			a = 0
+		}
+		return
+	}
+
+	assert.Equal(t, 1, goscala.Success(1).Recover(r).Get())
+	assert.Equal(t, 0, goscala.Failure[int](goscala.ErrUnsupported).Recover(r).Get())
+
+	err := fmt.Errorf("test try recover error")
+	assert.Equal(t, err, goscala.Failure[int](err).Recover(r).Failed())
+
+}
+
+func TestTryRecoverWith(t *testing.T) {
+	r := func(_ error) (goscala.Try[int], bool) {
+		return goscala.Success(0), true
+	}
+
+	assert.Equal(t, 1, goscala.Success(1).RecoverWith(r).Get())
+	assert.Equal(t, 0, goscala.Failure[int](goscala.ErrUnsupported).RecoverWith(r).Get())
+
+	r = func(err error) (ret goscala.Try[int], ok bool) {
+		if ok = errors.Is(err, goscala.ErrUnsupported); ok {
+			ret = goscala.Success(0)
+		}
+		return
+	}
+
+	assert.Equal(t, 1, goscala.Success(1).RecoverWith(r).Get())
+	assert.Equal(t, 0, goscala.Failure[int](goscala.ErrUnsupported).RecoverWith(r).Get())
+
+	err := fmt.Errorf("test try recover with error")
+	assert.Equal(t, err, goscala.Failure[int](err).RecoverWith(r).Failed())
+
 }

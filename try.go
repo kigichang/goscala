@@ -17,6 +17,11 @@ type Try[T any] interface {
 	Equals(func(T, T) bool) func(Try[T]) bool
 	Get() T
 	Filter(func(T) bool) Try[T]
+	Foreach(func(T))
+	GetOrElse(z T) T
+	OrElse(z Try[T]) Try[T]
+	Recover(func(error) (T, bool)) Try[T]
+	RecoverWith(func(error)(Try[T], bool)) Try[T]
 
 	Option() Option[T]
 	//Either() Either[error, T]
@@ -100,6 +105,60 @@ func (t *try[T]) Filter(p func(T) bool) Try[T] {
 			}
 			return Failure[T](ErrUnsatisfied)
 		},
+	)
+}
+
+func (t *try[T]) Foreach(fn func(T)) {
+	gomonad.FoldBool[T, bool](t.Fetch)(
+		False,
+		func(v T) bool {
+			fn(v)
+			return true
+		},
+	)
+}
+
+func (t *try[T]) GetOrElse(z T) T {
+	return gomonad.FoldBool[T, T](t.Fetch)(
+		func() T {
+			return z
+		},
+		func(v T) T {
+			return v
+		},
+	)
+}
+
+func (t *try[T]) OrElse(z Try[T]) Try[T] {
+	return gomonad.FoldBool[T, Try[T]](t.Fetch)(
+		func() Try[T] {
+			return z
+		},
+		Success[T],
+	)
+}
+
+func (t *try[T]) Recover(pf func(error) (T, bool)) Try[T] {
+	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+		func (err error) Try[T] {
+			if v, ok := pf(err); ok {
+				return Success[T](v)
+			}
+			return Failure[T](err)
+		},
+		Success[T],
+	)
+}
+
+func (t *try[T]) RecoverWith(pf func(error) (Try[T], bool)) Try[T] {
+	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+		func (err error) Try[T] {
+			if v, ok := pf(err); ok {
+				return v
+			}
+			return Failure[T](err)
+		},
+		Success[T],
 	)
 }
 
