@@ -6,14 +6,14 @@ import (
 )
 
 func Bool[R any](v R, ok bool) goscala.Either[bool, R] {
-	return gomonad.Fold[R, bool, goscala.Either[bool, R]](goscala.ValueBoolFunc(v, ok))(
+	return gomonad.Fold[R, bool, goscala.Either[bool, R]](gomonad.VF2(v, ok))(
 		goscala.Left[bool, R],
 		goscala.Right[bool, R],
 	)
 }
 
 func Err[R any](v R, err error) goscala.Either[error, R] {
-	return gomonad.Fold[R, error, goscala.Either[error, R]](goscala.ValueErrFunc(v, err))(
+	return gomonad.Fold[R, error, goscala.Either[error, R]](gomonad.VF2(v, err))(
 		goscala.Left[error, R],
 		goscala.Right[error, R],
 	)
@@ -23,7 +23,7 @@ func Cond[L, R any](cond func() bool, lv L, rv R) goscala.Either[L, R] {
 	return gomonad.FoldBool[R, goscala.Either[L, R]](func() (R, bool) {
 		return rv, cond()
 	})(
-		gomonad.FuncUnitAndThen[L, goscala.Either[L, R]](goscala.ValueFunc(lv))(goscala.Left[L, R]),
+		gomonad.FuncUnitAndThen[L, goscala.Either[L, R]](gomonad.VF(lv))(goscala.Left[L, R]),
 		goscala.Right[L, R],
 	)
 }

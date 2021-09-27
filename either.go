@@ -85,17 +85,17 @@ func (e *either[L, R]) Option() Option[R] {
 
 func (e *either[L, R]) Exists(p func(R) bool) bool {
 	return gomonad.FoldBool[R, bool](e.Fetch)(
-		False,
+		gomonad.False,
 		p,
 	)
 }
 
 func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
 	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
-		ValueFunc(Either[L, R](e)),
+		gomonad.VF(Either[L, R](e)),
 		func(r R) Either[L, R] {
 			if p(r) {
-				return e
+				return Right[L, R](r)
 			}
 			return Left[L, R](z)
 		},
@@ -104,28 +104,28 @@ func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
 
 func (e *either[L, R]) Forall(p func(R) bool) bool {
 	return gomonad.FoldBool[R, bool](e.Fetch)(
-		True,
+		gomonad.True,
 		p,
 	)
 }
 
 func (e *either[L, R]) Foreach(fn func(R)) {
-	gomonad.FoldBool[R, Unit](e.Fetch)(
-		UnitFunc,
-		UnitWrap(fn),
+	gomonad.FoldBool[R, gomonad.UnitRef](e.Fetch)(
+		gomonad.Unit,
+		gomonad.UnitWrap(fn),
 	)
 }
 
 func (e *either[L, R]) GetOrElse(z R) R {
 	return gomonad.FoldBool[R, R](e.Fetch)(
-		ValueFunc(z),
-		Id[R],
+		gomonad.VF(z),
+		gomonad.Id[R],
 	)
 }
 
 func (e *either[L, R]) OrElse(z Either[L, R]) Either[L, R] {
 	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
-		ValueFunc(z),
+		gomonad.VF(z),
 		Right[L, R],
 	)
 }

@@ -2,9 +2,11 @@ package goscala_test
 
 import (
 	"testing"
+
 	"github.com/kigichang/goscala/either"
 	"github.com/stretchr/testify/assert"
 )
+
 func TestLeft(t *testing.T) {
 	v := 0
 	e := either.Left[int, string](v)

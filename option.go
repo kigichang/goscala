@@ -61,26 +61,26 @@ func (opt *option[T]) Get() T {
 
 func (opt *option[T]) GetOrElse(z T) T {
 	return gomonad.FoldBool[T, T](opt.Fetch)(
-		ValueFunc[T](z),
-		Id[T],
+		gomonad.VF[T](z),
+		gomonad.Id[T],
 	)
 }
 
 func (opt *option[T]) OrElse(z Option[T]) Option[T] {
 	return gomonad.FoldBool[T, Option[T]](opt.Fetch)(
-		ValueFunc(z),
+		gomonad.VF(z),
 		Some[T],
 	)
 }
 
 func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
 	return func(v T) bool {
-		return gomonad.FoldBool[T, bool](opt.Fetch)(False, func(x T) bool { return eq(v, x) })
+		return gomonad.FoldBool[T, bool](opt.Fetch)(gomonad.False, func(x T) bool { return eq(v, x) })
 	}
 }
 
 func (opt *option[T]) Exists(p func(T) bool) bool {
-	//return gomonad.Fold[T, bool, bool](opt.Fetch)(Id[bool], p)
+	//return gomonad.Fold[T, bool, bool](opt.Fetch)(gomonad.Id[bool], p)
 	return opt.Filter(p).IsDefined()
 }
 
@@ -115,15 +115,15 @@ func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
 
 func (opt *option[T]) Forall(p func(T) bool) bool {
 	return gomonad.FoldBool[T, bool](opt.Fetch)(
-		True,
+		gomonad.True,
 		p,
 	)
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
-	gomonad.FoldBool[T, Unit](opt.Fetch)(
-		UnitFunc,
-		UnitWrap(f),
+	gomonad.FoldBool[T, gomonad.UnitRef](opt.Fetch)(
+		gomonad.Unit,
+		gomonad.UnitWrap(f),
 	)
 }
 

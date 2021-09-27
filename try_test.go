@@ -1,9 +1,9 @@
 package goscala_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
-	"errors"
 
 	"github.com/kigichang/goscala"
 	"github.com/stretchr/testify/assert"
@@ -114,7 +114,6 @@ func TestTryGetOrElse(t *testing.T) {
 	assert.Equal(t, 1, goscala.Success(1).GetOrElse(-1))
 	assert.Equal(t, -1, goscala.Failure[int](goscala.ErrUnsatisfied).GetOrElse(-1))
 }
-
 
 func TestTryOrElse(t *testing.T) {
 	ans := goscala.Success(-1)

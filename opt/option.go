@@ -20,21 +20,21 @@ func noneErr[T any](err error) goscala.Option[T] {
 }
 
 func Bool[T any](v T, ok bool) goscala.Option[T] {
-	return gomonad.FoldBool[T, goscala.Option[T]](goscala.ValueBoolFunc(v, ok))(
+	return gomonad.FoldBool[T, goscala.Option[T]](gomonad.VF2(v, ok))(
 		goscala.None[T],
 		goscala.Some[T],
 	)
 }
 
 func Err[T any](v T, err error) goscala.Option[T] {
-	return gomonad.FoldErr[T, goscala.Option[T]](goscala.ValueErrFunc(v, err))(noneErr[T], goscala.Some[T])
+	return gomonad.FoldErr[T, goscala.Option[T]](gomonad.VF2(v, err))(noneErr[T], goscala.Some[T])
 }
 
 func When[T any](cond func() bool) func(T) goscala.Option[T] {
 	return func(z T) goscala.Option[T] {
-		return goscala.Ternary(
+		return gomonad.Ternary(
 			cond,
-			gomonad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
+			gomonad.FuncUnitAndThen[T, goscala.Option[T]](gomonad.VF(z))(goscala.Some[T]),
 			goscala.None[T],
 		)
 	}
@@ -42,9 +42,9 @@ func When[T any](cond func() bool) func(T) goscala.Option[T] {
 
 func Unless[T any](cond func() bool) func(T) goscala.Option[T] {
 	return func(z T) goscala.Option[T] {
-		return goscala.Ternary(
+		return gomonad.Ternary(
 			func() bool { return !cond() },
-			gomonad.FuncUnitAndThen[T, goscala.Option[T]](goscala.ValueFunc(z))(goscala.Some[T]),
+			gomonad.FuncUnitAndThen[T, goscala.Option[T]](gomonad.VF(z))(goscala.Some[T]),
 			goscala.None[T],
 		)
 	}
@@ -81,7 +81,7 @@ func Fold[T, U any](opt goscala.Option[T]) func(U) func(func(T) U) U {
 	return func(z U) func(func(T) U) U {
 		return func(fn func(T) U) U {
 			return gomonad.FoldBool[T, U](opt.Fetch)(
-				goscala.ValueFunc(z),
+				gomonad.VF(z),
 				fn,
 			)
 		}
@@ -91,7 +91,7 @@ func Fold[T, U any](opt goscala.Option[T]) func(U) func(func(T) U) U {
 func Left[T, R any](opt goscala.Option[T]) func(R) goscala.Either[T, R] {
 	return func(z R) goscala.Either[T, R] {
 		return gomonad.FoldBool[T, goscala.Either[T, R]](opt.Fetch)(
-			goscala.ValueFunc(goscala.Right[T, R](z)),
+			gomonad.VF(goscala.Right[T, R](z)),
 			goscala.Left[T, R],
 		)
 	}
@@ -100,7 +100,7 @@ func Left[T, R any](opt goscala.Option[T]) func(R) goscala.Either[T, R] {
 func Right[L, T any](opt goscala.Option[T]) func(L) goscala.Either[L, T] {
 	return func(z L) goscala.Either[L, T] {
 		return gomonad.FoldBool[T, goscala.Either[L, T]](opt.Fetch)(
-			goscala.ValueFunc(goscala.Left[L, T](z)),
+			gomonad.VF(goscala.Left[L, T](z)),
 			goscala.Right[L, T],
 		)
 	}

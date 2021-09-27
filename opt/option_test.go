@@ -136,19 +136,19 @@ func TestRight(t *testing.T) {
 }
 
 func TestWhen(t *testing.T) {
-	o := opt.When[int](goscala.True)(0)
+	o := opt.When[int](gomonad.True)(0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
 
-	o = opt.When[int](goscala.False)(100)
+	o = opt.When[int](gomonad.False)(100)
 	assert.False(t, o.IsDefined())
 }
 
 func TestUnless(t *testing.T) {
-	o := opt.Unless[int](goscala.True)(100)
+	o := opt.Unless[int](gomonad.True)(100)
 	assert.False(t, o.IsDefined())
 
-	o = opt.Unless[int](goscala.False)(0)
+	o = opt.Unless[int](gomonad.False)(0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
 }
