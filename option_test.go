@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/kigichang/gomonad"
 	"github.com/kigichang/goscala"
 	"github.com/kigichang/goscala/opt"
 	"github.com/stretchr/testify/assert"
@@ -82,12 +83,12 @@ func TestMakeWitErr(t *testing.T) {
 
 func TestOptionContains(t *testing.T) {
 	o := goscala.Some(100)
-	eq := o.Contains(goscala.Eq[int])
+	eq := o.Contains(gomonad.Eq[int])
 	assert.True(t, eq(100))
 	assert.False(t, eq(101))
 
 	o = goscala.None[int]()
-	eq = o.Contains(goscala.Eq[int])
+	eq = o.Contains(gomonad.Eq[int])
 	assert.False(t, eq(0))
 	assert.False(t, eq(100))
 }
@@ -110,7 +111,7 @@ func TestOptionExists(t *testing.T) {
 
 func TestOptionEquals(t *testing.T) {
 	o := goscala.Some(100)
-	eq := o.Equals(goscala.Eq[int])
+	eq := o.Equals(gomonad.Eq[int])
 
 	assert.True(t, eq(o))
 	assert.True(t, eq(goscala.Some(100)))
@@ -118,7 +119,7 @@ func TestOptionEquals(t *testing.T) {
 	assert.False(t, eq(goscala.None[int]()))
 
 	o = goscala.None[int]()
-	eq = o.Equals(goscala.Eq[int])
+	eq = o.Equals(gomonad.Eq[int])
 	assert.False(t, eq(goscala.Some(0)))
 	assert.False(t, eq(goscala.Some(100)))
 	assert.True(t, eq(goscala.None[int]()))

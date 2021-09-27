@@ -66,20 +66,20 @@ func TypeStr(x interface{}) string {
 //	return IdErr(v, err)
 //}
 
-func Eq[T comparable](a, b T) bool {
-	return a == b
-}
-
-func Equal[T comparable](a, b T) bool {
-	return Eq(a, b)
-}
-
-func C[T any](flag bool, a, b T) T {
-	if flag {
-		return b
-	}
-	return a
-}
+//func Eq[T comparable](a, b T) bool {
+//	return a == b
+//}
+//
+//func Equal[T comparable](a, b T) bool {
+//	return Eq(a, b)
+//}
+//
+//func C[T any](flag bool, a, b T) T {
+//	if flag {
+//		return b
+//	}
+//	return a
+//}
 
 //func Compare[T Ordered](a, b T) int {
 //	if a == b {
