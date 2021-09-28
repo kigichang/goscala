@@ -99,22 +99,19 @@ func (t *try[T]) Get() T {
 func (t *try[T]) Filter(p func(T) bool) Try[T] {
 	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
 		Failure[T],
-		func(v T) Try[T] {
-			if p(v) {
-				return Success[T](v)
+		gomonad.FuncAndThen[T, bool, Try[T]](p)(func(ok bool) Try[T] {
+			if ok {
+				return Success[T](t.v)
 			}
 			return Failure[T](ErrUnsatisfied)
-		},
+		}),
 	)
 }
 
 func (t *try[T]) Foreach(fn func(T)) {
-	gomonad.FoldBool[T, bool](t.Fetch)(
-		gomonad.False,
-		func(v T) bool {
-			fn(v)
-			return true
-		},
+	gomonad.FoldBool[T, struct{}](t.Fetch)(
+		gomonad.Unit,
+		gomonad.UnitWrap(fn),
 	)
 }
 
