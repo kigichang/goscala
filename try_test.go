@@ -73,7 +73,7 @@ func TestTryEquals(t *testing.T) {
 
 }
 
-func TesttrFilter(t *testing.T) {
+func TestTryFilter(t *testing.T) {
 	predict := func(v int) bool {
 		return v > 0
 	}
