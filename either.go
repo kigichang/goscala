@@ -44,6 +44,10 @@ func (e *either[L, R]) Fetch() (R, bool) {
 	return e.rv, e.right
 }
 
+func (e *either[L, R]) FetchErr() (R, error) {
+	return e.rv, Cond(e.right, nil, ErrLeft)
+}
+
 func (e *either[L, R]) fetchAll() (R, L) {
 	return e.rv, e.lv
 }
@@ -75,57 +79,35 @@ func (e *either[L, R]) Get() R {
 }
 
 func (e *either[L, R]) Option() Option[R] {
-	return FoldBool[R, Option[R]](e.Fetch)(
-		None[R],
-		Some[R],
-	)
+	return PFF(Some[R], None[R])(e.Fetch)
 }
 
 func (e *either[L, R]) Exists(p func(R) bool) bool {
-	return FoldBool[R, bool](e.Fetch)(
-		False,
-		p,
-	)
+	return PFF(p, False)(e.Fetch)
 }
 
 func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
-	return FoldBool[R, Either[L, R]](e.Fetch)(
+	return PFF(
+		Predict(Right[L, R], VF(Left[L, R](z)))(p),
 		VF(Either[L, R](e)),
-		func(r R) Either[L, R] {
-			if p(r) {
-				return Right[L, R](r)
-			}
-			return Left[L, R](z)
-		},
-	)
+	)(e.Fetch)
+
 }
 
 func (e *either[L, R]) Forall(p func(R) bool) bool {
-	return FoldBool[R, bool](e.Fetch)(
-		True,
-		p,
-	)
+	return PFF(p, True)(e.Fetch)
 }
 
 func (e *either[L, R]) Foreach(fn func(R)) {
-	FoldBool[R, UnitRef](e.Fetch)(
-		Unit,
-		UnitWrap(fn),
-	)
+	PFF(UnitWrap(fn), Unit)(e.Fetch)
 }
 
 func (e *either[L, R]) GetOrElse(z R) R {
-	return FoldBool[R, R](e.Fetch)(
-		VF(z),
-		Id[R],
-	)
+	return Default(z)(e.Fetch)
 }
 
 func (e *either[L, R]) OrElse(z Either[L, R]) Either[L, R] {
-	return FoldBool[R, Either[L, R]](e.Fetch)(
-		VF(z),
-		Right[L, R],
-	)
+	return Cond(e.right, Either[L, R](e), z)
 }
 
 func (e *either[L, R]) Swap() Either[R, L] {
@@ -136,10 +118,10 @@ func (e *either[L, R]) Swap() Either[R, L] {
 }
 
 func (e *either[L, R]) Slice() []R {
-	return FoldBool[R, []R](e.Fetch)(
-		EmptySlice[R],
+	return PFF(
 		ElemSlice[R],
-	)
+		EmptySlice[R],
+	)(e.Fetch)
 }
 
 //func (e *either[L, R]) try() *try[R] {

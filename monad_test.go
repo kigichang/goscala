@@ -1,8 +1,6 @@
 package goscala_test
 
 import (
-	"fmt"
-	"strconv"
 	"testing"
 
 	gs "github.com/kigichang/goscala"
@@ -22,45 +20,45 @@ func sliceEqual[T comparable](a, b []T) bool {
 	return true
 }
 
-func TestFoldBool(t *testing.T) {
-	fetch1 := func() (int, bool) {
-		return 100, true
-	}
+//func TestFoldBool(t *testing.T) {
+//	fetch1 := func() (int, bool) {
+//		return 100, true
+//	}
+//
+//	fetch2 := func() (int, bool) {
+//		return 0, false
+//	}
+//
+//	z := func() string {
+//		return "false"
+//	}
+//
+//	result := gs.FoldBool[int, string](fetch1)(z, strconv.Itoa)
+//	assert.Equal(t, "100", result)
+//
+//	result = gs.FoldBool[int, string](fetch2)(z, strconv.Itoa)
+//	assert.Equal(t, "false", result)
+//}
 
-	fetch2 := func() (int, bool) {
-		return 0, false
-	}
-
-	z := func() string {
-		return "false"
-	}
-
-	result := gs.FoldBool[int, string](fetch1)(z, strconv.Itoa)
-	assert.Equal(t, "100", result)
-
-	result = gs.FoldBool[int, string](fetch2)(z, strconv.Itoa)
-	assert.Equal(t, "false", result)
-}
-
-func TestFoldErr(t *testing.T) {
-	fetch1 := func() (int, error) {
-		return 100, nil
-	}
-
-	fetch2 := func() (int, error) {
-		return 0, fmt.Errorf("0")
-	}
-
-	z := func(err error) string {
-		return err.Error()
-	}
-
-	result := gs.FoldErr[int, string](fetch1)(z, strconv.Itoa)
-	assert.Equal(t, "100", result)
-
-	result = gs.FoldErr[int, string](fetch2)(z, strconv.Itoa)
-	assert.Equal(t, "0", result)
-}
+//func TestFoldErr(t *testing.T) {
+//	fetch1 := func() (int, error) {
+//		return 100, nil
+//	}
+//
+//	fetch2 := func() (int, error) {
+//		return 0, fmt.Errorf("0")
+//	}
+//
+//	z := func(err error) string {
+//		return err.Error()
+//	}
+//
+//	result := gs.FoldErr[int, string](fetch1)(z, strconv.Itoa)
+//	assert.Equal(t, "100", result)
+//
+//	result = gs.FoldErr[int, string](fetch2)(z, strconv.Itoa)
+//	assert.Equal(t, "0", result)
+//}
 
 func TestFoldLeft(t *testing.T) {
 	s := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
