@@ -38,7 +38,7 @@ func TestCollect(t *testing.T) {
 		return
 	}
 
-	dst := slices.Collect[int, string](src)(fn)
+	dst := slices.Collect(src, fn)
 	assert.True(t, dst.Equals(gs.Eq[string])(slices.From("2", "4", "6", "8")))
 }
 
@@ -52,22 +52,26 @@ func TestCollectFirst(t *testing.T) {
 		return
 	}
 
-	dst := opt.Bool[string](slices.CollectFirst[int, string](src)(fn))
+	dst := opt.Bool(slices.CollectFirst(src, fn))
 	assert.Equal(t, "2", dst.Get())
 
 	fn = func(_ int) (string, bool) {
 		return "", false
 	}
 
-	assert.False(t, opt.Bool[string](slices.CollectFirst[int, string](src)(fn)).IsDefined())
+	assert.False(t, opt.Bool(slices.CollectFirst(src, fn)).IsDefined())
 }
 
 func TestFlatMap(t *testing.T) {
-	dst := slices.FlatMap[int, int](slices.From(1, 2, 3))(func(v int) gs.Sliceable[int] {
-		return slices.Map[int, int](slices.From(4, 5, 6))(func(x int) int {
-			return v * x
+	dst := slices.FlatMap(
+		slices.From(1, 2, 3),
+		func(v int) gs.Sliceable[int] {
+			return slices.Map(
+				slices.From(4, 5, 6),
+				func(x int) int {
+					return v * x
+				})
 		})
-	})
 
 	ans := slices.From(4, 5, 6, 8, 10, 12, 12, 15, 18)
 	assert.True(t, dst.Equals(gs.Eq[int])(ans))
@@ -84,11 +88,11 @@ func TestFoldLeft(t *testing.T) {
 		return v1 + v2
 	}
 
-	assert.Equal(t, -45, slices.FoldLeft[int, int](src)(0)(fn1))
-	assert.Equal(t, -45, slices.Fold[int, int](src)(0)(fn1))
+	assert.Equal(t, -45, slices.FoldLeft(src, 0, fn1))
+	assert.Equal(t, -45, slices.Fold(src, 0, fn1))
 
-	assert.Equal(t, 45, slices.FoldLeft[int, int](src)(0)(fn2))
-	assert.Equal(t, 45, slices.Fold[int, int](src)(0)(fn2))
+	assert.Equal(t, 45, slices.FoldLeft(src, 0, fn2))
+	assert.Equal(t, 45, slices.Fold(src, 0, fn2))
 }
 
 func TestFoldRight(t *testing.T) {
@@ -102,8 +106,8 @@ func TestFoldRight(t *testing.T) {
 		return v1 + v2
 	}
 
-	assert.Equal(t, 9, slices.FoldRight[int, int](src)(0)(fn1))
-	assert.Equal(t, 45, slices.FoldRight[int, int](src)(0)(fn2))
+	assert.Equal(t, 9, slices.FoldRight(src, 0, fn1))
+	assert.Equal(t, 45, slices.FoldRight(src, 0, fn2))
 }
 
 func TestPartitionMap(t *testing.T) {
@@ -116,7 +120,7 @@ func TestPartitionMap(t *testing.T) {
 		return gs.Left[int, int](10 + v)
 	}
 
-	a, b := slices.PartitionMap[int, int, int](src)(fn)
+	a, b := slices.PartitionMap(src, fn)
 	assert.True(t, slices.From(11, 13, 15, 17, 19).Equals(gs.Eq[int])(a))
 	assert.True(t, slices.From(2, 4, 6, 8).Equals(gs.Eq[int])(b))
 }

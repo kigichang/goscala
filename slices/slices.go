@@ -8,17 +8,23 @@ func toSlice[T any](s gs.Sliceable[T]) []T {
 	return s.Slice()
 }
 
-func Make[T any](a int, b ...int) gs.Slice[T] {
+func Make[T any](a ...int) gs.Slice[T] {
 
-	c := a
-	if len(b) > 0 {
-		c = b[0]
-	}
-	if c < a {
-		c = a
+	size, cap := 0, 0
+
+	if len(a) > 0 {
+		size, cap = a[0], a[0]
 	}
 
-	return gs.Slice[T](make([]T, a, c))
+	if len(a) > 1 {
+		cap = a[1]
+	}
+
+	if cap < size {
+		cap = size
+	}
+
+	return gs.Slice[T](make([]T, size, cap))
 }
 
 func Empty[T any]() gs.Slice[T] {
@@ -68,65 +74,57 @@ func Tabulate[T any](size int, f func(int) T) gs.Slice[T] {
 	return ret
 }
 
-func Collect[T, U any](s gs.Slice[T]) func(func(T) (U, bool)) gs.Slice[U] {
-	return func(pf func(T) (U, bool)) gs.Slice[U] {
-		ret := Empty[U]()
-		for i := range s {
-			if v, ok := pf(s[i]); ok {
-				ret = append(ret, v)
-			}
+func Collect[T, U any](s gs.Slice[T], pf func(T) (U, bool)) gs.Slice[U] {
+	ret := Empty[U]()
+	for i := range s {
+		if v, ok := pf(s[i]); ok {
+			ret = append(ret, v)
 		}
-		return ret
 	}
-
+	return ret
 }
 
-func CollectFirst[T, U any](s gs.Slice[T]) func(func(T) (U, bool)) (U, bool) {
-	return func(pf func(T) (U, bool)) (ret U, ok bool) {
-		for i := range s {
-			if ret, ok = pf(s[i]); ok {
-				return
-			}
+func CollectFirst[T, U any](s gs.Slice[T], pf func(T) (U, bool)) (ret U, ok bool) {
+	for i := range s {
+		if ret, ok = pf(s[i]); ok {
+			return
 		}
-		return
 	}
+	return
 }
 
-func FlatMap[T, U any](s gs.Slice[T]) func(func(T) gs.Sliceable[U]) gs.Slice[U] {
-	return gs.Currying2(gs.FlatMap[T, U])(s)
+func FlatMap[T, U any](s gs.Slice[T], fn func(T) gs.Sliceable[U]) gs.Slice[U] {
+	return gs.FlatMap(s, fn)
 }
 
-func FoldRight[T, U any](s gs.Slice[T]) func(U) func(func(T, U) U) U {
-	return gs.Currying3(gs.FoldRight[T, U])(s)
+func FoldRight[T, U any](s gs.Slice[T], z U, fn func(T, U) U) U {
+	return gs.FoldRight(s, z, fn)
 }
 
-func FoldLeft[T, U any](s gs.Slice[T]) func(U) func(func(U, T) U) U {
-	return gs.Currying3(gs.FoldLeft[T, U])(s)
+func FoldLeft[T, U any](s gs.Slice[T], z U, fn func(U, T) U) U {
+	return gs.FoldLeft(s, z, fn)
 }
 
-func Fold[T, U any](s gs.Slice[T]) func(U) func(func(U, T) U) U {
-	return FoldLeft[T, U](s)
+func Fold[T, U any](s gs.Slice[T], z U, fn func(U, T) U) U {
+	return FoldLeft(s, z, fn)
 }
 
-func Map[T, U any](s gs.Slice[T]) func(func(T) U) gs.Slice[U] {
-	return gs.Currying2(gs.Map[T, U])(s)
+func Map[T, U any](s gs.Slice[T], fn func(T) U) gs.Slice[U] {
+	return gs.Map(s, fn)
 }
 
-func PartitionMap[T, A, B any](s gs.Slice[T]) func(func(T) gs.Either[A, B]) (gs.Slice[A], gs.Slice[B]) {
-	return func(fn func(T) gs.Either[A, B]) (gs.Slice[A], gs.Slice[B]) {
-		a, b := Empty[A](), Empty[B]()
-		for i := range s {
-			v := fn(s[i])
+func PartitionMap[T, A, B any](s gs.Slice[T], fn func(T) gs.Either[A, B]) (gs.Slice[A], gs.Slice[B]) {
+	a, b := Empty[A](), Empty[B]()
+	for i := range s {
+		v := fn(s[i])
 
-			if v.IsRight() {
-				b = append(b, v.Right())
-			} else {
-				a = append(a, v.Left())
-			}
+		if v.IsRight() {
+			b = append(b, v.Right())
+		} else {
+			a = append(a, v.Left())
 		}
-		return a, b
 	}
-
+	return a, b
 }
 
 //
