@@ -1,25 +1,6 @@
 package try
 
 import (
-<<<<<<< HEAD
-	m "github.com/kigichang/gomonad"
-	"github.com/kigichang/goscala"
-	s "github.com/kigichang/goscala"
-)
-
-func Err[T any](v T, err error) s.Try[T] {
-	return m.FoldErr[T, goscala.Try[T]](m.VF2(v, err))(
-		s.Failure[T],
-		s.Success[T],
-	)
-}
-
-func Bool[T any](v T, ok bool) goscala.Try[T] {
-	return m.FoldBool[T, s.Try[T]](m.VF2(v, ok))(
-		m.FuncUnitAndThen[error, s.Try[T]](m.VF(s.ErrUnsatisfied))(s.Failure[T]),
-		s.Success[T],
-	)
-=======
 	gs "github.com/kigichang/goscala"
 )
 
@@ -95,5 +76,4 @@ func Transform[T, U any](t gs.Try[T]) func(func(T) gs.Try[U], func(error) gs.Try
 			fail,
 		)(t.FetchErr)
 	}
->>>>>>> 0ec6c5065beced5aa1c8726cf96ee1da6ef6d566
 }

@@ -2,52 +2,32 @@ package try_test
 
 import (
 	"fmt"
-<<<<<<< HEAD
-	"testing"
-
-	"github.com/kigichang/goscala"
-=======
 	"strconv"
 	"testing"
 
 	gs "github.com/kigichang/goscala"
->>>>>>> 0ec6c5065beced5aa1c8726cf96ee1da6ef6d566
 	"github.com/kigichang/goscala/try"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestErr(t *testing.T) {
 	v := 1
-<<<<<<< HEAD
-	err := fmt.Errorf("try error")
-=======
 	err := fmt.Errorf("tr error")
->>>>>>> 0ec6c5065beced5aa1c8726cf96ee1da6ef6d566
-
 	tr := try.Err[int](v, nil)
 
 	t.Log(tr)
 	assert.Equal(t, true, tr.IsSuccess())
 	assert.Equal(t, false, tr.IsFailure())
 	assert.Equal(t, v, tr.Get())
-<<<<<<< HEAD
-	assert.Equal(t, goscala.ErrUnsupported, tr.Failed())
-
-	tr = try.Err[int](v, err)
-	fmt.Println(tr)
-=======
 	assert.Equal(t, gs.ErrUnsupported, tr.Failed())
 
 	tr = try.Err[int](v, err)
 	t.Log(tr)
->>>>>>> 0ec6c5065beced5aa1c8726cf96ee1da6ef6d566
 	assert.Equal(t, false, tr.IsSuccess())
 	assert.Equal(t, true, tr.IsFailure())
 	assert.Equal(t, err, tr.Failed())
 	assert.Panics(t, func() { tr.Get() })
 }
-<<<<<<< HEAD
-=======
 
 func TestCollect(t *testing.T) {
 
@@ -177,4 +157,3 @@ func TestTryTransform(t *testing.T) {
 	assert.True(t, ans.IsFailure())
 	assert.Equal(t, gs.ErrEmpty, ans.Failed())
 }
->>>>>>> 0ec6c5065beced5aa1c8726cf96ee1da6ef6d566
