@@ -64,7 +64,7 @@ func TestMap(t *testing.T) {
 func TestFlatMap(t *testing.T) {
 	s := gs.Some[int](100)
 
-	f := gs.FuncAndThen[int, string, gs.Option[string]](strconv.Itoa)(gs.Some[string])
+	f := gs.FuncAndThen(strconv.Itoa, gs.Some[string])
 
 	s1 := opt.FlatMap(s, f)
 	assert.Equal(t, true, s1.IsDefined())

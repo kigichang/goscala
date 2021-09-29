@@ -1,23 +1,53 @@
 package goscala
 
-import "github.com/kigichang/goscala/m"
-
-func FuncCompose[T, A, R any](f func(T) R) func(func(A) T) func(A) R {
-	return m.Currying2(m.FuncCompose[T, A, R])(f)
+func FuncCompose[T, A, R any](f func(T) R, g func(A) T) func(A) R {
+	return func(v A) R {
+		return f(g(v))
+	}
 }
 
-func FuncAndThen[T, R, U any](f func(T) R) func(func(R) U) func(T) U {
-	return m.Currying2(m.FuncAndThen[T, R, U])(f)
+func FuncUnitCompose[T, R any](f func(T) R, g func() T) func() R {
+	return func() R {
+		return f(g())
+	}
 }
 
-func FuncUnitAndThen[R, U any](f func() R) func(func(R) U) func() U {
-	return m.Currying2(m.FuncUnitAndThen[R, U])(f)
+func funcCCompose[T, A, C, R any](f func(T, C) R, g func(A) (T, C)) func(A) R {
+	return func(a A) R {
+		return f(g(a))
+	}
 }
 
-func FuncBoolAndThen[T, R, U any](f func(T) (R, bool)) func(func(R, bool) U) func(T) U {
-	return m.Currying2(m.FuncBoolAndThen[T, R, U])(f)
+func FuncBoolCompose[T, A, R any](f func(T, bool) R, g func(A) (T, bool)) func(A) R {
+	return funcCCompose(f, g)
 }
 
-func FuncErrAndThen[T, R, U any](f func(T) (R, error)) func(func(R, error) U) func(T) U {
-	return m.Currying2(m.FuncErrAndThen[T, R, U])(f)
+func FuncErrCompose[T, A, R any](f func(T, error) R, g func(A) (T, error)) func(A) R {
+	return funcCCompose(f, g)
+}
+
+func FuncAndThen[T, R, U any](f func(T) R, g func(R) U) func(T) U {
+	return func(v T) U {
+		return g(f(v))
+	}
+}
+
+func FuncUnitAndThen[R, U any](f func() R, g func(R) U) func() U {
+	return func() U {
+		return g(f())
+	}
+}
+
+func funcCAndThen[T, R, C, U any](f func(T) (R, C), g func(R, C) U) func(T) U {
+	return func(v T) U {
+		return g(f(v))
+	}
+}
+
+func FuncBoolAndThen[T, R, U any](f func(T) (R, bool), g func(R, bool) U) func(T) U {
+	return funcCAndThen(f, g)
+}
+
+func FuncErrAndThen[T, R, U any](f func(T) (R, error), g func(R, error) U) func(T) U {
+	return funcCAndThen(f, g)
 }

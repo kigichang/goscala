@@ -17,7 +17,7 @@ func Bool[T any](v T, ok bool) gs.Try[T] {
 
 func Collect[T, U any](t gs.Try[T], pf func(T) (U, bool)) gs.Try[U] {
 	return gs.PartialErr(
-		gs.FuncBoolAndThen[T, U, gs.Try[U]](pf)(Bool[U]),
+		gs.FuncBoolAndThen(pf, Bool[U]),
 		gs.Failure[U],
 	)(t.FetchErr)
 }
@@ -31,21 +31,21 @@ func FlatMap[T, U any](t gs.Try[T], fn func(T) gs.Try[U]) gs.Try[U] {
 
 func Map[T, U any](t gs.Try[T], fn func(T) U) gs.Try[U] {
 	return gs.PartialErr(
-		gs.FuncAndThen[T, U, gs.Try[U]](fn)(gs.Success[U]),
+		gs.FuncAndThen(fn, gs.Success[U]),
 		gs.Failure[U],
 	)(t.FetchErr)
 }
 
 func MapErr[T, U any](t gs.Try[T], fn func(T) (U, error)) gs.Try[U] {
 	return gs.PartialErr(
-		gs.FuncErrAndThen[T, U, gs.Try[U]](fn)(Err[U]),
+		gs.FuncErrAndThen(fn, Err[U]),
 		gs.Failure[U],
 	)(t.FetchErr)
 }
 
 func MapBool[T, U any](t gs.Try[T], fn func(T) (U, bool)) gs.Try[U] {
 	return gs.PartialErr(
-		gs.FuncBoolAndThen[T, U, gs.Try[U]](fn)(Bool[U]),
+		gs.FuncBoolAndThen(fn, Bool[U]),
 		gs.Failure[U],
 	)(t.FetchErr)
 }
