@@ -10,7 +10,7 @@ type Option[T any] interface {
 	IsDefined() bool
 	IsEmpty() bool
 
-	Contains(func(T, T) bool) func(T) bool
+	Contains(T, func(T, T) bool) bool
 	Exists(func(T) bool) bool
 	Equals(func(T, T) bool) func(Option[T]) bool
 	Filter(func(T) bool) Option[T]
@@ -69,13 +69,12 @@ func (opt *option[T]) OrElse(z Option[T]) Option[T] {
 	return Cond(opt.defined, Option[T](opt), z)
 }
 
-func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
-	return func(v T) bool {
-		return Partial(
-			Currying2(eq)(v),
-			False,
-		)(opt.Fetch)
-	}
+func (opt *option[T]) Contains(v T, eq func(T, T) bool) bool {
+	return Partial(
+		Currying2(eq)(v),
+		False,
+	)(opt.Fetch)
+
 }
 
 func (opt *option[T]) Exists(p func(T) bool) bool {
