@@ -1,9 +1,5 @@
 package goscala
 
-import (
-	"github.com/kigichang/goscala/m"
-)
-
 func Fold[T, C, U any](succ func(T) U, fail func(C) U) func(func() (T, C)) U {
 	return func(fetch func() (T, C)) U {
 		return FoldV(succ, fail)(fetch())
@@ -42,18 +38,18 @@ func FoldV[T, C, U any](succ func(T) U, fail func(C) U) func(T, C) U {
 //	return m.Currying3To2(m.FoldErr[T, U])(fetch)
 //}
 
-func FoldLeft[T, U any](s []T) func(U) func(func(U, T) U) U {
-	return m.Currying3(m.FoldLeft[T, U])(s)
-}
-
-func ScanLeft[T, U any](s []T) func(U) func(func(U, T) U) []U {
-	return m.Currying3(m.ScanLeft[T, U])(s)
-}
-
-func FoldRight[T, U any](s []T) func(U) func(func(T, U) U) U {
-	return m.Currying3(m.FoldRight[T, U])(s)
-}
-
-func ScanRight[T, U any](s []T) func(U) func(func(T, U) U) []U {
-	return m.Currying3(m.ScanRight[T, U])(s)
-}
+//func FoldLeft[T, U any](s []T) func(U) func(func(U, T) U) U {
+//	return m.Currying3(m.FoldLeft[T, U])(s)
+//}
+//
+//func ScanLeft[T, U any](s []T) func(U) func(func(U, T) U) []U {
+//	return m.Currying3(m.ScanLeft[T, U])(s)
+//}
+//
+//func FoldRight[T, U any](s []T) func(U) func(func(T, U) U) U {
+//	return m.Currying3(m.FoldRight[T, U])(s)
+//}
+//
+//func ScanRight[T, U any](s []T) func(U) func(func(T, U) U) []U {
+//	return m.Currying3(m.ScanRight[T, U])(s)
+//}

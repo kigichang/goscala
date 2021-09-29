@@ -23,7 +23,7 @@ func TestErr(t *testing.T) {
 	assert.Equal(t, gs.ErrUnsupported, tr.Failed())
 
 	tr = try.Err[int](v, err)
-	fmt.Println(tr)
+	t.Log(tr)
 	assert.Equal(t, false, tr.IsSuccess())
 	assert.Equal(t, true, tr.IsFailure())
 	assert.Equal(t, err, tr.Failed())

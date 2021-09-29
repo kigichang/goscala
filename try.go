@@ -146,8 +146,8 @@ func (t *try[T]) Option() Option[T] {
 
 func (t *try[T]) Slice() []T {
 	return PFF(
-		ElemSlice[T],
-		EmptySlice[T],
+		SliceOne[T],
+		SliceEmpty[T],
 	)(t.Fetch)
 }
 
