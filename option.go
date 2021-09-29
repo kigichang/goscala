@@ -42,6 +42,10 @@ func (opt *option[T]) Fetch() (T, bool) {
 	return opt.v, opt.defined
 }
 
+func (opt *option[T]) FetchErr() (T, error) {
+	return opt.v, Cond(opt.defined, nil, ErrEmpty)
+}
+
 func (opt *option[T]) IsDefined() bool {
 	return opt.defined
 }
@@ -58,22 +62,19 @@ func (opt *option[T]) Get() T {
 }
 
 func (opt *option[T]) GetOrElse(z T) T {
-	return FoldBool[T, T](opt.Fetch)(
-		VF[T](z),
-		Id[T],
-	)
+	return Default(z)(opt.Fetch)
 }
 
 func (opt *option[T]) OrElse(z Option[T]) Option[T] {
-	return FoldBool[T, Option[T]](opt.Fetch)(
-		VF(z),
-		Some[T],
-	)
+	return Cond(opt.defined, Option[T](opt), z)
 }
 
 func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
 	return func(v T) bool {
-		return FoldBool[T, bool](opt.Fetch)(False, func(x T) bool { return eq(v, x) })
+		return PFF(
+			Currying2(eq)(v),
+			False,
+		)(opt.Fetch)
 	}
 }
 
@@ -84,25 +85,20 @@ func (opt *option[T]) Exists(p func(T) bool) bool {
 
 func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 	return func(that Option[T]) bool {
-		return FoldBool[T, bool](opt.Fetch)(
-			that.IsEmpty,
+		return PFF(
 			func(x T) bool {
 				return that.IsDefined() && eq(that.Get(), x)
 			},
-		)
+			that.IsEmpty,
+		)(opt.Fetch)
 	}
 }
 
 func (opt *option[T]) Filter(p func(T) bool) Option[T] {
-	return FoldBool[T, Option[T]](opt.Fetch)(
+	return PFF(
+		Predict(Some[T], None[T])(p),
 		None[T],
-		func(x T) Option[T] {
-			if p(x) {
-				return opt
-			}
-			return None[T]()
-		},
-	)
+	)(opt.Fetch)
 }
 
 func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
@@ -112,24 +108,21 @@ func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
 }
 
 func (opt *option[T]) Forall(p func(T) bool) bool {
-	return FoldBool[T, bool](opt.Fetch)(
-		True,
+	return PFF(
 		p,
-	)
+		True,
+	)(opt.Fetch)
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
-	FoldBool[T, UnitRef](opt.Fetch)(
-		Unit,
-		UnitWrap(f),
-	)
+	PFF(UnitWrap(f), Unit)(opt.Fetch)
 }
 
 func (opt *option[T]) Slice() []T {
-	return FoldBool[T, []T](opt.Fetch)(
-		EmptySlice[T],
+	return PFF(
 		ElemSlice[T],
-	)
+		EmptySlice[T],
+	)(opt.Fetch)
 }
 
 func Some[T any](v T) Option[T] {
