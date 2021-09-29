@@ -1,21 +1,20 @@
 package try
 
 import (
-	m "github.com/kigichang/gomonad"
 	"github.com/kigichang/goscala"
-	s "github.com/kigichang/goscala"
+	gs "github.com/kigichang/goscala"
 )
 
-func Err[T any](v T, err error) s.Try[T] {
-	return m.FoldErr[T, goscala.Try[T]](m.VF2(v, err))(
-		s.Failure[T],
-		s.Success[T],
+func Err[T any](v T, err error) gs.Try[T] {
+	return gs.FoldErr[T, goscala.Try[T]](gs.VF2(v, err))(
+		gs.Failure[T],
+		gs.Success[T],
 	)
 }
 
-func Bool[T any](v T, ok bool) goscala.Try[T] {
-	return m.FoldBool[T, s.Try[T]](m.VF2(v, ok))(
-		m.FuncUnitAndThen[error, s.Try[T]](m.VF(s.ErrUnsatisfied))(s.Failure[T]),
-		s.Success[T],
+func Bool[T any](v T, ok bool) gs.Try[T] {
+	return gs.FoldBool[T, gs.Try[T]](gs.VF2(v, ok))(
+		gs.FuncUnitAndThen[error, gs.Try[T]](gs.VF(gs.ErrUnsatisfied))(gs.Failure[T]),
+		gs.Success[T],
 	)
 }

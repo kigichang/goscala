@@ -1,6 +1,9 @@
 package goscala
 
-import "reflect"
+import (
+	"constraints"
+	"reflect"
+)
 
 func TypeStr(x interface{}) string {
 	return reflect.TypeOf(x).String()
@@ -121,3 +124,22 @@ func TypeStr(x interface{}) string {
 //func False() bool {
 //	return false
 //}
+
+func Compare[T constraints.Ordered](a, b T) int {
+	if a == b {
+		return 0
+	}
+
+	if a > b {
+		return 1
+	}
+	return -1
+}
+
+func Equal[T comparable](a, b T) bool {
+	return Eq[T](a, b)
+}
+
+func Eq[T comparable](a, b T) bool {
+	return a == b
+}

@@ -2,8 +2,6 @@ package goscala
 
 import (
 	"fmt"
-
-	"github.com/kigichang/gomonad"
 )
 
 type Either[L, R any] interface {
@@ -77,22 +75,22 @@ func (e *either[L, R]) Get() R {
 }
 
 func (e *either[L, R]) Option() Option[R] {
-	return gomonad.FoldBool[R, Option[R]](e.Fetch)(
+	return FoldBool[R, Option[R]](e.Fetch)(
 		None[R],
 		Some[R],
 	)
 }
 
 func (e *either[L, R]) Exists(p func(R) bool) bool {
-	return gomonad.FoldBool[R, bool](e.Fetch)(
-		gomonad.False,
+	return FoldBool[R, bool](e.Fetch)(
+		False,
 		p,
 	)
 }
 
 func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
-	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
-		gomonad.VF(Either[L, R](e)),
+	return FoldBool[R, Either[L, R]](e.Fetch)(
+		VF(Either[L, R](e)),
 		func(r R) Either[L, R] {
 			if p(r) {
 				return Right[L, R](r)
@@ -103,29 +101,29 @@ func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
 }
 
 func (e *either[L, R]) Forall(p func(R) bool) bool {
-	return gomonad.FoldBool[R, bool](e.Fetch)(
-		gomonad.True,
+	return FoldBool[R, bool](e.Fetch)(
+		True,
 		p,
 	)
 }
 
 func (e *either[L, R]) Foreach(fn func(R)) {
-	gomonad.FoldBool[R, gomonad.UnitRef](e.Fetch)(
-		gomonad.Unit,
-		gomonad.UnitWrap(fn),
+	FoldBool[R, UnitRef](e.Fetch)(
+		Unit,
+		UnitWrap(fn),
 	)
 }
 
 func (e *either[L, R]) GetOrElse(z R) R {
-	return gomonad.FoldBool[R, R](e.Fetch)(
-		gomonad.VF(z),
-		gomonad.Id[R],
+	return FoldBool[R, R](e.Fetch)(
+		VF(z),
+		Id[R],
 	)
 }
 
 func (e *either[L, R]) OrElse(z Either[L, R]) Either[L, R] {
-	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
-		gomonad.VF(z),
+	return FoldBool[R, Either[L, R]](e.Fetch)(
+		VF(z),
 		Right[L, R],
 	)
 }
@@ -138,9 +136,9 @@ func (e *either[L, R]) Swap() Either[R, L] {
 }
 
 func (e *either[L, R]) Slice() []R {
-	return gomonad.FoldBool[R, []R](e.Fetch)(
-		gomonad.EmptySlice[R],
-		gomonad.ElemSlice[R],
+	return FoldBool[R, []R](e.Fetch)(
+		EmptySlice[R],
+		ElemSlice[R],
 	)
 }
 

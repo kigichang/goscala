@@ -3,8 +3,6 @@ package goscala
 import (
 	"errors"
 	"fmt"
-
-	"github.com/kigichang/gomonad"
 )
 
 type Try[T any] interface {
@@ -81,7 +79,7 @@ func (t *try[T]) fetchErr() (T, error) {
 
 func (t *try[T]) Equals(eq func(T, T) bool) func(Try[T]) bool {
 	return func(that Try[T]) bool {
-		return gomonad.FoldErr[T, bool](t.fetchErr)(
+		return FoldErr[T, bool](t.fetchErr)(
 			func(err error) bool {
 				return that.IsFailure() && errors.Is(err, that.Failed())
 			},
@@ -97,9 +95,9 @@ func (t *try[T]) Get() T {
 }
 
 func (t *try[T]) Filter(p func(T) bool) Try[T] {
-	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+	return FoldErr[T, Try[T]](t.fetchErr)(
 		Failure[T],
-		gomonad.FuncAndThen[T, bool, Try[T]](p)(func(ok bool) Try[T] {
+		FuncAndThen[T, bool, Try[T]](p)(func(ok bool) Try[T] {
 			if ok {
 				return Success[T](t.v)
 			}
@@ -109,28 +107,28 @@ func (t *try[T]) Filter(p func(T) bool) Try[T] {
 }
 
 func (t *try[T]) Foreach(fn func(T)) {
-	gomonad.FoldBool[T, struct{}](t.Fetch)(
-		gomonad.Unit,
-		gomonad.UnitWrap(fn),
+	FoldBool[T, struct{}](t.Fetch)(
+		Unit,
+		UnitWrap(fn),
 	)
 }
 
 func (t *try[T]) GetOrElse(z T) T {
-	return gomonad.FoldBool[T, T](t.Fetch)(
-		gomonad.VF(z),
-		gomonad.Id[T],
+	return FoldBool[T, T](t.Fetch)(
+		VF(z),
+		Id[T],
 	)
 }
 
 func (t *try[T]) OrElse(z Try[T]) Try[T] {
-	return gomonad.FoldBool[T, Try[T]](t.Fetch)(
-		gomonad.VF(z),
+	return FoldBool[T, Try[T]](t.Fetch)(
+		VF(z),
 		Success[T],
 	)
 }
 
 func (t *try[T]) Recover(pf func(error) (T, bool)) Try[T] {
-	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+	return FoldErr[T, Try[T]](t.fetchErr)(
 		func(err error) Try[T] {
 			if v, ok := pf(err); ok {
 				return Success[T](v)
@@ -142,7 +140,7 @@ func (t *try[T]) Recover(pf func(error) (T, bool)) Try[T] {
 }
 
 func (t *try[T]) RecoverWith(pf func(error) (Try[T], bool)) Try[T] {
-	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+	return FoldErr[T, Try[T]](t.fetchErr)(
 		func(err error) Try[T] {
 			if v, ok := pf(err); ok {
 				return v
@@ -154,7 +152,7 @@ func (t *try[T]) RecoverWith(pf func(error) (Try[T], bool)) Try[T] {
 }
 
 func (t *try[T]) Option() Option[T] {
-	return gomonad.FoldBool[T, Option[T]](t.Fetch)(
+	return FoldBool[T, Option[T]](t.Fetch)(
 		None[T],
 		Some[T],
 	)
@@ -165,9 +163,9 @@ func (t *try[T]) Option() Option[T] {
 //}
 
 func (t *try[T]) Slice() []T {
-	return gomonad.FoldBool[T, []T](t.Fetch)(
-		gomonad.EmptySlice[T],
-		gomonad.ElemSlice[T],
+	return FoldBool[T, []T](t.Fetch)(
+		EmptySlice[T],
+		ElemSlice[T],
 	)
 }
 
