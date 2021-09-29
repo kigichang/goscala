@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/kigichang/gomonad"
-	"github.com/kigichang/goscala"
+	gs "github.com/kigichang/goscala"
 	"github.com/kigichang/goscala/opt"
 	"github.com/stretchr/testify/assert"
 )
@@ -51,27 +50,27 @@ func TestErr(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 
 	s1 := opt.Map[int, string](s)(strconv.Itoa)
 	assert.True(t, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 	s1 = opt.Map[int, string](n)(strconv.Itoa)
 	assert.False(t, s1.IsDefined())
 }
 
 func TestFlatMap(t *testing.T) {
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 
-	f := gomonad.FuncAndThen[int, string, goscala.Option[string]](strconv.Itoa)(goscala.Some[string])
+	f := gs.FuncAndThen[int, string, gs.Option[string]](strconv.Itoa)(gs.Some[string])
 
 	s1 := opt.FlatMap[int, string](s)(f)
 	assert.Equal(t, true, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 	s1 = opt.FlatMap[int, string](n)(f)
 	assert.Equal(t, false, s1.IsDefined())
 }
@@ -79,8 +78,8 @@ func TestFlatMap(t *testing.T) {
 func TestFold(t *testing.T) {
 	z := "zero"
 
-	assert.Equal(t, "100", opt.Fold[int, string](goscala.Some[int](100))(z)(strconv.Itoa))
-	assert.Equal(t, "zero", opt.Fold[int, string](goscala.None[int]())(z)(strconv.Itoa))
+	assert.Equal(t, "100", opt.Fold[int, string](gs.Some[int](100))(z)(strconv.Itoa))
+	assert.Equal(t, "zero", opt.Fold[int, string](gs.None[int]())(z)(strconv.Itoa))
 }
 
 func TestCollect(t *testing.T) {
@@ -100,7 +99,7 @@ func TestCollect(t *testing.T) {
 	assert.Equal(t, true, ans.IsDefined())
 	assert.Equal(t, "100", ans.Get())
 
-	o = goscala.Some(0)
+	o = gs.Some(0)
 	ans = opt.Collect[int, string](o)(p)
 	assert.Equal(t, false, ans.IsDefined())
 }
@@ -108,13 +107,13 @@ func TestCollect(t *testing.T) {
 func TestLeft(t *testing.T) {
 	v1 := 1
 	v2 := "abc"
-	o := goscala.Some[int](v1)
+	o := gs.Some[int](v1)
 
 	e := opt.Left[int, string](o)(v2)
 	assert.True(t, e.IsLeft())
 	assert.Equal(t, v1, e.Left())
 
-	o = goscala.None[int]()
+	o = gs.None[int]()
 	e = opt.Left[int, string](o)(v2)
 	assert.True(t, e.IsRight())
 	assert.Equal(t, v2, e.Right())
@@ -123,32 +122,32 @@ func TestLeft(t *testing.T) {
 func TestRight(t *testing.T) {
 	v1 := 1
 	v2 := "abc"
-	o := goscala.Some[int](v1)
+	o := gs.Some[int](v1)
 
 	e := opt.Right[string, int](o)(v2)
 	assert.True(t, e.IsRight())
 	assert.Equal(t, v1, e.Right())
 
-	o = goscala.None[int]()
+	o = gs.None[int]()
 	e = opt.Right[string, int](o)(v2)
 	assert.True(t, e.IsLeft())
 	assert.Equal(t, v2, e.Left())
 }
 
 func TestWhen(t *testing.T) {
-	o := opt.When[int](gomonad.True)(0)
+	o := opt.When[int](gs.True)(0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
 
-	o = opt.When[int](gomonad.False)(100)
+	o = opt.When[int](gs.False)(100)
 	assert.False(t, o.IsDefined())
 }
 
 func TestUnless(t *testing.T) {
-	o := opt.Unless[int](gomonad.True)(100)
+	o := opt.Unless[int](gs.True)(100)
 	assert.False(t, o.IsDefined())
 
-	o = opt.Unless[int](gomonad.False)(0)
+	o = opt.Unless[int](gs.False)(0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
 }
