@@ -25,11 +25,19 @@ func Cond[L, R any](cond func() bool, lv L, rv R) gs.Either[L, R] {
 	)(rv, cond())
 }
 
-func Fold[L, R, T any](e gs.Either[L, R]) func(func(L) T, func(R) T) T {
+func _Fold[L, R, T any](e gs.Either[L, R]) func(func(L) T, func(R) T) T {
 	return func(fa func(L) T, fb func(R) T) T {
 		return gs.PFF(
 			fb,
 			gs.FuncUnitAndThen[L, T](e.Left)(fa),
+		)(e.Fetch)
+	}
+}
+func Fold[L, R, T any](left func(L) T, right func(R) T) func(gs.Either[L, R]) T {
+	return func(e gs.Either[L, R]) T {
+		return gs.PFF(
+			right,
+			gs.FuncUnitAndThen[L, T](e.Left)(left),
 		)(e.Fetch)
 	}
 }

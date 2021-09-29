@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEitherCond(t *testing.T) {
+func TestCond(t *testing.T) {
 	lv := 100
 	rv := "abc"
 
@@ -24,7 +24,7 @@ func TestEitherCond(t *testing.T) {
 	assert.Equal(t, lv, e.Left())
 }
 
-func TestEitherFlatMap(t *testing.T) {
+func TestFlatMap(t *testing.T) {
 	f := func(v string) goscala.Either[int, int64] {
 		a, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
@@ -53,7 +53,7 @@ func TestEitherFlatMap(t *testing.T) {
 	assert.Equal(t, l.Left(), e.Left())
 }
 
-func TestEitherFold(t *testing.T) {
+func TestFold(t *testing.T) {
 	fa := func(v int) int64 {
 		return int64(v + 10)
 	}
@@ -67,19 +67,20 @@ func TestEitherFold(t *testing.T) {
 	}
 
 	r := goscala.Right[int, string]("1000")
-	e := either.Fold[int, string, int64](r)(fa, fb)
+	//e := either.Fold[int, string, int64](r)(fa, fb)
+	e := either.Fold(fa, fb)(r)
 	assert.Equal(t, int64(1000*10), e)
 
 	r = goscala.Right[int, string]("abc")
-	e = either.Fold[int, string, int64](r)(fa, fb)
+	e = either.Fold(fa, fb)(r)
 	assert.Equal(t, int64(-1), e)
 
 	l := goscala.Left[int, string](100)
-	e = either.Fold[int, string, int64](l)(fa, fb)
+	e = either.Fold(fa, fb)(l)
 	assert.Equal(t, int64(100+10), e)
 }
 
-func TestEitherMap(t *testing.T) {
+func TestMap(t *testing.T) {
 	/*
 	   Right(12).map(x => "flower") // Result: Right("flower")
 	   Left(12).map(x => "flower")  // Result: Left(12)
