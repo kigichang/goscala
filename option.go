@@ -71,7 +71,7 @@ func (opt *option[T]) OrElse(z Option[T]) Option[T] {
 
 func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
 	return func(v T) bool {
-		return PFF(
+		return Partial(
 			Currying2(eq)(v),
 			False,
 		)(opt.Fetch)
@@ -85,7 +85,7 @@ func (opt *option[T]) Exists(p func(T) bool) bool {
 
 func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 	return func(that Option[T]) bool {
-		return PFF(
+		return Partial(
 			func(x T) bool {
 				return that.IsDefined() && eq(that.Get(), x)
 			},
@@ -95,7 +95,7 @@ func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 }
 
 func (opt *option[T]) Filter(p func(T) bool) Option[T] {
-	return PFF(
+	return Partial(
 		Predict(Some[T], None[T])(p),
 		None[T],
 	)(opt.Fetch)
@@ -108,18 +108,18 @@ func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
 }
 
 func (opt *option[T]) Forall(p func(T) bool) bool {
-	return PFF(
+	return Partial(
 		p,
 		True,
 	)(opt.Fetch)
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
-	PFF(UnitWrap(f), Unit)(opt.Fetch)
+	Partial(UnitWrap(f), Unit)(opt.Fetch)
 }
 
 func (opt *option[T]) Slice() Slice[T] {
-	return PFF(
+	return Partial(
 		SliceOne[T],
 		SliceEmpty[T],
 	)(opt.Fetch)

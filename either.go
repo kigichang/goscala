@@ -79,15 +79,15 @@ func (e *either[L, R]) Get() R {
 }
 
 func (e *either[L, R]) Option() Option[R] {
-	return PFF(Some[R], None[R])(e.Fetch)
+	return Partial(Some[R], None[R])(e.Fetch)
 }
 
 func (e *either[L, R]) Exists(p func(R) bool) bool {
-	return PFF(p, False)(e.Fetch)
+	return Partial(p, False)(e.Fetch)
 }
 
 func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
-	return PFF(
+	return Partial(
 		Predict(Right[L, R], VF(Left[L, R](z)))(p),
 		VF(Either[L, R](e)),
 	)(e.Fetch)
@@ -95,11 +95,11 @@ func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
 }
 
 func (e *either[L, R]) Forall(p func(R) bool) bool {
-	return PFF(p, True)(e.Fetch)
+	return Partial(p, True)(e.Fetch)
 }
 
 func (e *either[L, R]) Foreach(fn func(R)) {
-	PFF(UnitWrap(fn), Unit)(e.Fetch)
+	Partial(UnitWrap(fn), Unit)(e.Fetch)
 }
 
 func (e *either[L, R]) GetOrElse(z R) R {
@@ -118,7 +118,7 @@ func (e *either[L, R]) Swap() Either[R, L] {
 }
 
 func (e *either[L, R]) Slice() Slice[R] {
-	return PFF(
+	return Partial(
 		SliceOne[R],
 		SliceEmpty[R],
 	)(e.Fetch)

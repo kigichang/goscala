@@ -79,7 +79,7 @@ func (t *try[T]) FetchErr() (T, error) {
 
 func (t *try[T]) Equals(eq func(T, T) bool) func(Try[T]) bool {
 	return func(that Try[T]) bool {
-		return PFErrF(
+		return PartialErr(
 			func(v T) bool {
 				return that.IsSuccess() && eq(v, that.Success())
 			},
@@ -95,7 +95,7 @@ func (t *try[T]) Get() T {
 }
 
 func (t *try[T]) Filter(p func(T) bool) Try[T] {
-	return PFErrF(
+	return PartialErr(
 		Predict(
 			Success[T],
 			VF(Failure[T](ErrUnsatisfied)),
@@ -105,7 +105,7 @@ func (t *try[T]) Filter(p func(T) bool) Try[T] {
 }
 
 func (t *try[T]) Foreach(fn func(T)) {
-	PFF(
+	Partial(
 		UnitWrap(fn),
 		Unit,
 	)(t.Fetch)
@@ -120,21 +120,21 @@ func (t *try[T]) OrElse(z Try[T]) Try[T] {
 }
 
 func (t *try[T]) Recover(pf func(error) (T, bool)) Try[T] {
-	return PFErrF(
+	return PartialErr(
 		Success[T],
 		PredictTransform(Success[T], Failure[T])(pf),
 	)(t.FetchErr)
 }
 
 func (t *try[T]) RecoverWith(pf func(error) (Try[T], bool)) Try[T] {
-	return PFErrF(
+	return PartialErr(
 		Success[T],
 		PredictTransform(Id[Try[T]], Failure[T])(pf),
 	)(t.FetchErr)
 }
 
 func (t *try[T]) Option() Option[T] {
-	return PFF(
+	return Partial(
 		Some[T],
 		None[T],
 	)(t.Fetch)
@@ -145,7 +145,7 @@ func (t *try[T]) Option() Option[T] {
 //}
 
 func (t *try[T]) Slice() Slice[T] {
-	return PFF(
+	return Partial(
 		SliceOne[T],
 		SliceEmpty[T],
 	)(t.Fetch)
