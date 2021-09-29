@@ -4,6 +4,10 @@ import "sort"
 
 type Slice[T any] []T
 
+type Sliceable[T any] interface {
+	Slice() Slice[T]
+}
+
 func (s Slice[T]) Clone() Slice[T] {
 	ret := make([]T, len(s))
 	copy(ret, s)
@@ -408,16 +412,16 @@ func ScanRight[T, U any](s []T, z U, fn func(T, U) U) []U {
 	return result
 }
 
-func Map[T, U any](s []T, fn func(T) U) []U {
-	return FoldLeft[T, []U](s, []U{}, func(z []U, a T) []U {
+func Map[T, U any](s Slice[T], fn func(T) U) Slice[U] {
+	return FoldLeft[T, Slice[U]](s, SliceEmpty[U](), func(z Slice[U], a T) Slice[U] {
 		z = append(z, fn(a))
 		return z
 	})
 }
 
-func FlatMap[T, U any](s []T, fn func(T) []U) []U {
-	return FoldLeft[T, []U](s, []U{}, func(z []U, a T) []U {
-		z = append(z, fn(a)...)
+func FlatMap[T, U any](s Slice[T], fn func(T) Sliceable[U]) Slice[U] {
+	return FoldLeft[T, Slice[U]](s, SliceEmpty[U](), func(z Slice[U], a T) Slice[U] {
+		z = append(z, fn(a).Slice()...)
 		return z
 	})
 }

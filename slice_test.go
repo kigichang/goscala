@@ -353,40 +353,6 @@ func TestSliceSort(t *testing.T) {
 	assert.True(t, src.Sort(gs.Compare[int]).Equals(gs.Eq[int])(slices.From(1, 2, 3, 4, 5, 6, 7, 8, 9)))
 }
 
-//func TestSliceCollect(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn := func(v int) (s string, ok bool) {
-//		if ok = ((v & 0x01) == 0); ok {
-//			s = strconv.Itoa(v)
-//		}
-//		return
-//	}
-//
-//	dst := SliceCollect(src, fn)
-//	assert.True(t, dst.Equals(slices.From("2", "4", "6", "8"), Equal[string]))
-//}
-//
-//func TestSliceCollectFirst(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn := func(v int) (s string, ok bool) {
-//		if ok = ((v & 0x01) == 0); ok {
-//			s = strconv.Itoa(v)
-//		}
-//		return
-//	}
-//
-//	dst := SliceCollectFirst(src, fn)
-//	assert.Equal(t, "2", dst.Get())
-//
-//	fn = func(_ int) (string, bool) {
-//		return "", false
-//	}
-//
-//	assert.False(t, SliceCollectFirst(src, fn).IsDefined())
-//}
-//
 //func TestSliceScanLeft(t *testing.T) {
 //	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
 //
@@ -413,64 +379,9 @@ func TestSliceSort(t *testing.T) {
 //	assert.True(t, dst.Equals(ans, Equal[int]))
 //}
 //
-//func TestSliceFoldLeft(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn1 := func(v1, v2 int) int {
-//		return v1 - v2
-//	}
-//
-//	fn2 := func(v1, v2 int) int {
-//		return v1 + v2
-//	}
-//
-//	assert.Equal(t, -45, SliceFoldLeft(src, 0, fn1))
-//	assert.Equal(t, -45, SliceFold(src, 0, fn1))
-//
-//	assert.Equal(t, 45, SliceFoldLeft(src, 0, fn2))
-//	assert.Equal(t, 45, SliceFoldLeft(src, 0, fn2))
-//}
-//
-//func TestSliceFoldRight(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn1 := func(v1, v2 int) int {
-//		return v1 - v2
-//	}
-//
-//	fn2 := func(v1, v2 int) int {
-//		return v1 + v2
-//	}
-//
-//	assert.Equal(t, 9, SliceFoldRight(src, 0, fn1))
-//	assert.Equal(t, 45, SliceFoldRight(src, 0, fn2))
-//}
-//
-//func TestSliceFlatMap(t *testing.T) {
-//	dst := SliceFlatMap(slices.From(1, 2, 3), func(v int) Sliceable[int] {
-//		return SliceMap(slices.From(4, 5, 6), func(x int) int {
-//			return v * x
-//		})
-//	})
-//
-//	ans := slices.From(4, 5, 6, 8, 10, 12, 12, 15, 18)
-//	assert.True(t, dst.Equals(ans, Equal[int]))
-//}
-//
-//func TestSlicePartitionMap(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn := func(v int) Either[int, int] {
-//		if (v & 0x01) == 0 {
-//			return Right[int, int](v)
-//		}
-//		return Left[int, int](10 + v)
-//	}
-//
-//	a, b := SlicePartitionMap(src, fn)
-//	assert.True(t, slices.From(11, 13, 15, 17, 19).Equals(a, Equal[int]))
-//	assert.True(t, slices.From(2, 4, 6, 8).Equals(b, Equal[int]))
-//}
+
+
+
 //
 //func TestSliceGroupBy(t *testing.T) {
 //	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)

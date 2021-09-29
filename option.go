@@ -20,7 +20,7 @@ type Option[T any] interface {
 	Get() T
 	GetOrElse(z T) T
 	OrElse(Option[T]) Option[T]
-	Slice() []T
+	Slice() Slice[T]
 }
 
 type option[T any] struct {
@@ -118,7 +118,7 @@ func (opt *option[T]) Foreach(f func(T)) {
 	PFF(UnitWrap(f), Unit)(opt.Fetch)
 }
 
-func (opt *option[T]) Slice() []T {
+func (opt *option[T]) Slice() Slice[T] {
 	return PFF(
 		SliceOne[T],
 		SliceEmpty[T],
