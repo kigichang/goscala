@@ -1,0 +1,62 @@
+package slices
+
+import (
+	gs "github.com/kigichang/goscala"
+)
+
+func Make[T any](a int, b ...int) gs.Slice[T] {
+
+	c := a
+	if len(b) > 0 {
+		c = b[0]
+	}
+	if c < a {
+		c = a
+	}
+
+	return gs.Slice[T](make([]T, a, c))
+}
+
+func Empty[T any]() gs.Slice[T] {
+	return gs.SliceEmpty[T]()
+}
+
+func One[T any](elem T) gs.Slice[T] {
+	return gs.SliceOne[T](elem)
+}
+
+func From[T any](a ...T) gs.Slice[T] {
+	return a
+}
+
+func Fill[T any](size int, v T) gs.Slice[T] {
+	ret := Make[T](size)
+	for i := range ret {
+		ret[i] = v
+	}
+	return ret
+}
+
+func Range[T gs.Numeric](start, end, step T) gs.Slice[T] {
+	ret := Make[T](0)
+
+	for i := start; i < end; i += step {
+		ret = append(ret, i)
+	}
+
+	return ret
+}
+
+func Tabulate[T any](size int, f func(int) T) gs.Slice[T] {
+	if size <= 0 {
+		return Empty[T]()
+	}
+
+	ret := Make[T](size)
+
+	for i := 0; i < size; i++ {
+		ret[i] = f(i)
+	}
+
+	return ret
+}

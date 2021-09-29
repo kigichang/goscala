@@ -120,8 +120,8 @@ func (opt *option[T]) Foreach(f func(T)) {
 
 func (opt *option[T]) Slice() []T {
 	return PFF(
-		ElemSlice[T],
-		EmptySlice[T],
+		SliceOne[T],
+		SliceEmpty[T],
 	)(opt.Fetch)
 }
 

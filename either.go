@@ -119,8 +119,8 @@ func (e *either[L, R]) Swap() Either[R, L] {
 
 func (e *either[L, R]) Slice() []R {
 	return PFF(
-		ElemSlice[R],
-		EmptySlice[R],
+		SliceOne[R],
+		SliceEmpty[R],
 	)(e.Fetch)
 }
 
