@@ -17,3 +17,7 @@ func FuncUnitAndThen[R, U any](f func() R) func(func(R) U) func() U {
 func FuncBoolAndThen[T, R, U any](f func(T) (R, bool)) func(func(R, bool) U) func(T) U {
 	return m.Currying2(m.FuncBoolAndThen[T, R, U])(f)
 }
+
+func FuncErrAndThen[T, R, U any](f func(T) (R, error)) func(func(R, error) U) func(T) U {
+	return m.Currying2(m.FuncErrAndThen[T, R, U])(f)
+}
