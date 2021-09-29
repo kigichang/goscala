@@ -23,7 +23,7 @@ type Try[T any] interface {
 
 	Option() Option[T]
 	//Either() Either[error, T]
-	Slice() []T
+	Slice() Slice[T]
 }
 
 type try[T any] struct {
@@ -144,7 +144,7 @@ func (t *try[T]) Option() Option[T] {
 //	return t.either()
 //}
 
-func (t *try[T]) Slice() []T {
+func (t *try[T]) Slice() Slice[T] {
 	return PFF(
 		SliceOne[T],
 		SliceEmpty[T],

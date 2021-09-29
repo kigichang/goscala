@@ -21,7 +21,7 @@ type Either[L, R any] interface {
 	OrElse(Either[L, R]) Either[L, R]
 	Swap() Either[R, L]
 	Option() Option[R]
-	Slice() []R
+	Slice() Slice[R]
 	// Try() Try[R]
 }
 
@@ -117,7 +117,7 @@ func (e *either[L, R]) Swap() Either[R, L] {
 	return Right[R, L](e.lv)
 }
 
-func (e *either[L, R]) Slice() []R {
+func (e *either[L, R]) Slice() Slice[R] {
 	return PFF(
 		SliceOne[R],
 		SliceEmpty[R],
