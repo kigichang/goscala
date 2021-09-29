@@ -46,11 +46,3 @@ func Equal[T comparable](a, b T) bool {
 func Eq[T comparable](a, b T) bool {
 	return a == b
 }
-
-func SliceEmpty[T any]() []T {
-	return []T{}
-}
-
-func SliceOne[T any](v T) []T {
-	return []T { v }
-}

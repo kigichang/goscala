@@ -26,6 +26,9 @@ func One[T any](elem T) gs.Slice[T] {
 }
 
 func From[T any](a ...T) gs.Slice[T] {
+	if a == nil {
+		return Empty[T]()
+	}
 	return a
 }
 
