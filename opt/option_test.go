@@ -52,12 +52,12 @@ func TestErr(t *testing.T) {
 func TestMap(t *testing.T) {
 	s := gs.Some[int](100)
 
-	s1 := opt.Map[int, string](s)(strconv.Itoa)
+	s1 := opt.Map(s, strconv.Itoa)
 	assert.True(t, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
 
 	n := gs.None[int]()
-	s1 = opt.Map[int, string](n)(strconv.Itoa)
+	s1 = opt.Map(n, strconv.Itoa)
 	assert.False(t, s1.IsDefined())
 }
 
@@ -66,12 +66,12 @@ func TestFlatMap(t *testing.T) {
 
 	f := gs.FuncAndThen[int, string, gs.Option[string]](strconv.Itoa)(gs.Some[string])
 
-	s1 := opt.FlatMap[int, string](s)(f)
+	s1 := opt.FlatMap(s, f)
 	assert.Equal(t, true, s1.IsDefined())
 	assert.Equal(t, "100", s1.Get())
 
 	n := gs.None[int]()
-	s1 = opt.FlatMap[int, string](n)(f)
+	s1 = opt.FlatMap(n, f)
 	assert.Equal(t, false, s1.IsDefined())
 }
 
@@ -91,16 +91,16 @@ func TestCollect(t *testing.T) {
 	}
 
 	o := opt.Bool(0, false)
-	ans := opt.Collect[int, string](o)(p)
+	ans := opt.Collect(o, p)
 	assert.Equal(t, false, ans.IsDefined())
 
 	o = opt.Bool(100, true)
-	ans = opt.Collect[int, string](o)(p)
+	ans = opt.Collect(o, p)
 	assert.Equal(t, true, ans.IsDefined())
 	assert.Equal(t, "100", ans.Get())
 
 	o = gs.Some(0)
-	ans = opt.Collect[int, string](o)(p)
+	ans = opt.Collect(o, p)
 	assert.Equal(t, false, ans.IsDefined())
 }
 
@@ -109,12 +109,12 @@ func TestLeft(t *testing.T) {
 	v2 := "abc"
 	o := gs.Some[int](v1)
 
-	e := opt.Left[int, string](o)(v2)
+	e := opt.Left(o, v2)
 	assert.True(t, e.IsLeft())
 	assert.Equal(t, v1, e.Left())
 
 	o = gs.None[int]()
-	e = opt.Left[int, string](o)(v2)
+	e = opt.Left(o, v2)
 	assert.True(t, e.IsRight())
 	assert.Equal(t, v2, e.Right())
 }
@@ -124,30 +124,30 @@ func TestRight(t *testing.T) {
 	v2 := "abc"
 	o := gs.Some[int](v1)
 
-	e := opt.Right[string, int](o)(v2)
+	e := opt.Right(o, v2)
 	assert.True(t, e.IsRight())
 	assert.Equal(t, v1, e.Right())
 
 	o = gs.None[int]()
-	e = opt.Right[string, int](o)(v2)
+	e = opt.Right(o, v2)
 	assert.True(t, e.IsLeft())
 	assert.Equal(t, v2, e.Left())
 }
 
 func TestWhen(t *testing.T) {
-	o := opt.When[int](gs.True)(0)
+	o := opt.When(gs.True, 0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
 
-	o = opt.When[int](gs.False)(100)
+	o = opt.When(gs.False, 100)
 	assert.False(t, o.IsDefined())
 }
 
 func TestUnless(t *testing.T) {
-	o := opt.Unless[int](gs.True)(100)
+	o := opt.Unless(gs.True, 100)
 	assert.False(t, o.IsDefined())
 
-	o = opt.Unless[int](gs.False)(0)
+	o = opt.Unless(gs.False, 0)
 	assert.True(t, o.IsDefined())
 	assert.Equal(t, 0, o.Get())
 }
