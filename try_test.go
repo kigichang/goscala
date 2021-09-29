@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kigichang/gomonad"
 	"github.com/kigichang/goscala"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,18 +57,18 @@ func TestTryEquals(t *testing.T) {
 	tr := goscala.Failure[int](err)
 
 	assert.True(t,
-		tr.Equals(gomonad.Equal[int])(
+		tr.Equals(goscala.Equal[int])(
 			goscala.Failure[int](goscala.ErrUnsupported)))
 
 	assert.False(t,
-		tr.Equals(gomonad.Eq[int])(goscala.Failure[int](fmt.Errorf("Test"))))
+		tr.Equals(goscala.Eq[int])(goscala.Failure[int](fmt.Errorf("Test"))))
 
 	tr = goscala.Success(100)
-	assert.True(t, tr.Equals(gomonad.Eq[int])(goscala.Success(100)))
-	assert.False(t, tr.Equals(gomonad.Eq[int])(goscala.Success(101)))
+	assert.True(t, tr.Equals(goscala.Eq[int])(goscala.Success(100)))
+	assert.False(t, tr.Equals(goscala.Eq[int])(goscala.Success(101)))
 
-	assert.False(t, goscala.Failure[int](goscala.ErrUnsupported).Equals(gomonad.Eq[int])(goscala.Success(100)))
-	assert.False(t, goscala.Success(100).Equals(gomonad.Eq[int])(goscala.Failure[int](goscala.ErrUnsupported)))
+	assert.False(t, goscala.Failure[int](goscala.ErrUnsupported).Equals(goscala.Eq[int])(goscala.Success(100)))
+	assert.False(t, goscala.Success(100).Equals(goscala.Eq[int])(goscala.Failure[int](goscala.ErrUnsupported)))
 
 }
 

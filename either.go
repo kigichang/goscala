@@ -2,8 +2,6 @@ package goscala
 
 import (
 	"fmt"
-
-	"github.com/kigichang/gomonad"
 )
 
 type Either[L, R any] interface {
@@ -23,7 +21,7 @@ type Either[L, R any] interface {
 	OrElse(Either[L, R]) Either[L, R]
 	Swap() Either[R, L]
 	Option() Option[R]
-	Slice() []R
+	Slice() Slice[R]
 	// Try() Try[R]
 }
 
@@ -44,6 +42,10 @@ func (e *either[L, R]) String() string {
 
 func (e *either[L, R]) Fetch() (R, bool) {
 	return e.rv, e.right
+}
+
+func (e *either[L, R]) FetchErr() (R, error) {
+	return e.rv, Cond(e.right, nil, ErrLeft)
 }
 
 func (e *either[L, R]) fetchAll() (R, L) {
@@ -77,57 +79,35 @@ func (e *either[L, R]) Get() R {
 }
 
 func (e *either[L, R]) Option() Option[R] {
-	return gomonad.FoldBool[R, Option[R]](e.Fetch)(
-		None[R],
-		Some[R],
-	)
+	return PFF(Some[R], None[R])(e.Fetch)
 }
 
 func (e *either[L, R]) Exists(p func(R) bool) bool {
-	return gomonad.FoldBool[R, bool](e.Fetch)(
-		gomonad.False,
-		p,
-	)
+	return PFF(p, False)(e.Fetch)
 }
 
 func (e *either[L, R]) FilterOrElse(p func(R) bool, z L) Either[L, R] {
-	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
-		gomonad.VF(Either[L, R](e)),
-		func(r R) Either[L, R] {
-			if p(r) {
-				return Right[L, R](r)
-			}
-			return Left[L, R](z)
-		},
-	)
+	return PFF(
+		Predict(Right[L, R], VF(Left[L, R](z)))(p),
+		VF(Either[L, R](e)),
+	)(e.Fetch)
+
 }
 
 func (e *either[L, R]) Forall(p func(R) bool) bool {
-	return gomonad.FoldBool[R, bool](e.Fetch)(
-		gomonad.True,
-		p,
-	)
+	return PFF(p, True)(e.Fetch)
 }
 
 func (e *either[L, R]) Foreach(fn func(R)) {
-	gomonad.FoldBool[R, gomonad.UnitRef](e.Fetch)(
-		gomonad.Unit,
-		gomonad.UnitWrap(fn),
-	)
+	PFF(UnitWrap(fn), Unit)(e.Fetch)
 }
 
 func (e *either[L, R]) GetOrElse(z R) R {
-	return gomonad.FoldBool[R, R](e.Fetch)(
-		gomonad.VF(z),
-		gomonad.Id[R],
-	)
+	return Default(z)(e.Fetch)
 }
 
 func (e *either[L, R]) OrElse(z Either[L, R]) Either[L, R] {
-	return gomonad.FoldBool[R, Either[L, R]](e.Fetch)(
-		gomonad.VF(z),
-		Right[L, R],
-	)
+	return Cond(e.right, Either[L, R](e), z)
 }
 
 func (e *either[L, R]) Swap() Either[R, L] {
@@ -137,11 +117,11 @@ func (e *either[L, R]) Swap() Either[R, L] {
 	return Right[R, L](e.lv)
 }
 
-func (e *either[L, R]) Slice() []R {
-	return gomonad.FoldBool[R, []R](e.Fetch)(
-		gomonad.EmptySlice[R],
-		gomonad.ElemSlice[R],
-	)
+func (e *either[L, R]) Slice() Slice[R] {
+	return PFF(
+		SliceOne[R],
+		SliceEmpty[R],
+	)(e.Fetch)
 }
 
 //func (e *either[L, R]) try() *try[R] {

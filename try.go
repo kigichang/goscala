@@ -3,8 +3,6 @@ package goscala
 import (
 	"errors"
 	"fmt"
-
-	"github.com/kigichang/gomonad"
 )
 
 type Try[T any] interface {
@@ -25,7 +23,7 @@ type Try[T any] interface {
 
 	Option() Option[T]
 	//Either() Either[error, T]
-	Slice() []T
+	Slice() Slice[T]
 }
 
 type try[T any] struct {
@@ -75,20 +73,20 @@ func (t *try[T]) Fetch() (T, bool) {
 	return t.v, t.err == nil
 }
 
-func (t *try[T]) fetchErr() (T, error) {
+func (t *try[T]) FetchErr() (T, error) {
 	return t.v, t.err
 }
 
 func (t *try[T]) Equals(eq func(T, T) bool) func(Try[T]) bool {
 	return func(that Try[T]) bool {
-		return gomonad.FoldErr[T, bool](t.fetchErr)(
-			func(err error) bool {
-				return that.IsFailure() && errors.Is(err, that.Failed())
-			},
+		return PFErrF(
 			func(v T) bool {
 				return that.IsSuccess() && eq(v, that.Success())
 			},
-		)
+			func(err error) bool {
+				return that.IsFailure() && errors.Is(err, that.Failed())
+			},
+		)(t.FetchErr)
 	}
 }
 
@@ -97,78 +95,60 @@ func (t *try[T]) Get() T {
 }
 
 func (t *try[T]) Filter(p func(T) bool) Try[T] {
-	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
+	return PFErrF(
+		Predict(
+			Success[T],
+			VF(Failure[T](ErrUnsatisfied)),
+		)(p),
 		Failure[T],
-		gomonad.FuncAndThen[T, bool, Try[T]](p)(func(ok bool) Try[T] {
-			if ok {
-				return Success[T](t.v)
-			}
-			return Failure[T](ErrUnsatisfied)
-		}),
-	)
+	)(t.FetchErr)
 }
 
 func (t *try[T]) Foreach(fn func(T)) {
-	gomonad.FoldBool[T, struct{}](t.Fetch)(
-		gomonad.Unit,
-		gomonad.UnitWrap(fn),
-	)
+	PFF(
+		UnitWrap(fn),
+		Unit,
+	)(t.Fetch)
 }
 
 func (t *try[T]) GetOrElse(z T) T {
-	return gomonad.FoldBool[T, T](t.Fetch)(
-		gomonad.VF(z),
-		gomonad.Id[T],
-	)
+	return Default(z)(t.Fetch)
 }
 
 func (t *try[T]) OrElse(z Try[T]) Try[T] {
-	return gomonad.FoldBool[T, Try[T]](t.Fetch)(
-		gomonad.VF(z),
-		Success[T],
-	)
+	return Cond(t.IsSuccess(), Try[T](t), z)
 }
 
 func (t *try[T]) Recover(pf func(error) (T, bool)) Try[T] {
-	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
-		func(err error) Try[T] {
-			if v, ok := pf(err); ok {
-				return Success[T](v)
-			}
-			return Failure[T](err)
-		},
+	return PFErrF(
 		Success[T],
-	)
+		PredictTransform(Success[T], Failure[T])(pf),
+	)(t.FetchErr)
 }
 
 func (t *try[T]) RecoverWith(pf func(error) (Try[T], bool)) Try[T] {
-	return gomonad.FoldErr[T, Try[T]](t.fetchErr)(
-		func(err error) Try[T] {
-			if v, ok := pf(err); ok {
-				return v
-			}
-			return Failure[T](err)
-		},
+	return PFErrF(
 		Success[T],
-	)
+		PredictTransform(Id[Try[T]], Failure[T])(pf),
+	)(t.FetchErr)
 }
 
 func (t *try[T]) Option() Option[T] {
-	return gomonad.FoldBool[T, Option[T]](t.Fetch)(
-		None[T],
+	return PFF(
 		Some[T],
-	)
+		None[T],
+	)(t.Fetch)
 }
 
 //func (t *try[T]) Either() Either[error, T] {
 //	return t.either()
 //}
 
-func (t *try[T]) Slice() []T {
-	return gomonad.FoldBool[T, []T](t.Fetch)(
-		gomonad.EmptySlice[T],
-		gomonad.ElemSlice[T],
-	)
+func (t *try[T]) Slice() Slice[T] {
+	return PFF(
+		SliceOne[T],
+		SliceEmpty[T],
+	)(t.Fetch)
 }
 
 func success[T any](v T) *try[T] {

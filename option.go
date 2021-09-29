@@ -2,8 +2,6 @@ package goscala
 
 import (
 	"fmt"
-
-	"github.com/kigichang/gomonad"
 )
 
 type Option[T any] interface {
@@ -22,7 +20,7 @@ type Option[T any] interface {
 	Get() T
 	GetOrElse(z T) T
 	OrElse(Option[T]) Option[T]
-	Slice() []T
+	Slice() Slice[T]
 }
 
 type option[T any] struct {
@@ -44,6 +42,10 @@ func (opt *option[T]) Fetch() (T, bool) {
 	return opt.v, opt.defined
 }
 
+func (opt *option[T]) FetchErr() (T, error) {
+	return opt.v, Cond(opt.defined, nil, ErrEmpty)
+}
+
 func (opt *option[T]) IsDefined() bool {
 	return opt.defined
 }
@@ -60,51 +62,43 @@ func (opt *option[T]) Get() T {
 }
 
 func (opt *option[T]) GetOrElse(z T) T {
-	return gomonad.FoldBool[T, T](opt.Fetch)(
-		gomonad.VF[T](z),
-		gomonad.Id[T],
-	)
+	return Default(z)(opt.Fetch)
 }
 
 func (opt *option[T]) OrElse(z Option[T]) Option[T] {
-	return gomonad.FoldBool[T, Option[T]](opt.Fetch)(
-		gomonad.VF(z),
-		Some[T],
-	)
+	return Cond(opt.defined, Option[T](opt), z)
 }
 
 func (opt *option[T]) Contains(eq func(T, T) bool) func(T) bool {
 	return func(v T) bool {
-		return gomonad.FoldBool[T, bool](opt.Fetch)(gomonad.False, func(x T) bool { return eq(v, x) })
+		return PFF(
+			Currying2(eq)(v),
+			False,
+		)(opt.Fetch)
 	}
 }
 
 func (opt *option[T]) Exists(p func(T) bool) bool {
-	//return gomonad.Fold[T, bool, bool](opt.Fetch)(gomonad.Id[bool], p)
+	//return Fold[T, bool, bool](opt.Fetch)(Id[bool], p)
 	return opt.Filter(p).IsDefined()
 }
 
 func (opt *option[T]) Equals(eq func(T, T) bool) func(Option[T]) bool {
 	return func(that Option[T]) bool {
-		return gomonad.FoldBool[T, bool](opt.Fetch)(
-			that.IsEmpty,
+		return PFF(
 			func(x T) bool {
 				return that.IsDefined() && eq(that.Get(), x)
 			},
-		)
+			that.IsEmpty,
+		)(opt.Fetch)
 	}
 }
 
 func (opt *option[T]) Filter(p func(T) bool) Option[T] {
-	return gomonad.FoldBool[T, Option[T]](opt.Fetch)(
+	return PFF(
+		Predict(Some[T], None[T])(p),
 		None[T],
-		func(x T) Option[T] {
-			if p(x) {
-				return opt
-			}
-			return None[T]()
-		},
-	)
+	)(opt.Fetch)
 }
 
 func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
@@ -114,24 +108,21 @@ func (opt *option[T]) FilterNot(p func(T) bool) Option[T] {
 }
 
 func (opt *option[T]) Forall(p func(T) bool) bool {
-	return gomonad.FoldBool[T, bool](opt.Fetch)(
-		gomonad.True,
+	return PFF(
 		p,
-	)
+		True,
+	)(opt.Fetch)
 }
 
 func (opt *option[T]) Foreach(f func(T)) {
-	gomonad.FoldBool[T, gomonad.UnitRef](opt.Fetch)(
-		gomonad.Unit,
-		gomonad.UnitWrap(f),
-	)
+	PFF(UnitWrap(f), Unit)(opt.Fetch)
 }
 
-func (opt *option[T]) Slice() []T {
-	return gomonad.FoldBool[T, []T](opt.Fetch)(
-		gomonad.EmptySlice[T],
-		gomonad.ElemSlice[T],
-	)
+func (opt *option[T]) Slice() Slice[T] {
+	return PFF(
+		SliceOne[T],
+		SliceEmpty[T],
+	)(opt.Fetch)
 }
 
 func Some[T any](v T) Option[T] {
