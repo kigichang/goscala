@@ -35,19 +35,19 @@ func TestFlatMap(t *testing.T) {
 
 	r := goscala.Right[int, string]("1000")
 
-	e := either.FlatMap(f)(r)
+	e := either.FlatMap(r, f)
 
 	assert.Equal(t, true, e.IsRight())
 	assert.Equal(t, int64(1000), e.Right())
 
 	r = goscala.Right[int, string]("abc")
-	e = either.FlatMap(f)(r)
+	e = either.FlatMap(r, f)
 	assert.Equal(t, false, e.IsRight())
 	assert.Equal(t, true, e.IsLeft())
 	assert.Equal(t, 0, e.Left())
 
 	l := goscala.Left[int, string](100)
-	e = either.FlatMap(f)(l)
+	e = either.FlatMap(l, f)
 
 	assert.Equal(t, true, e.IsLeft())
 	assert.Equal(t, l.Left(), e.Left())
@@ -84,15 +84,15 @@ func TestMap(t *testing.T) {
 	   Right(12).map(x => "flower") // Result: Right("flower")
 	   Left(12).map(x => "flower")  // Result: Left(12)
 	*/
-	f := either.Map[int, int, string](func(_ int) string {
+	f := func(_ int) string {
 		return "flower"
-	})
+	}
 
-	e := f(goscala.Right[int, int](12))
+	e := either.Map(goscala.Right[int, int](12), f)
 	assert.Equal(t, true, e.IsRight())
 	assert.Equal(t, "flower", e.Right())
 
-	e = f(goscala.Left[int, int](12))
+	e = either.Map(goscala.Left[int, int](12), f)
 	assert.Equal(t, true, e.IsLeft())
 	assert.Equal(t, 12, e.Left())
 }
