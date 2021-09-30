@@ -112,7 +112,7 @@ func Fold[T, U any](s gs.Slice[T], z U, fn func(U, T) U) U {
 }
 
 func Map[T, U any](s gs.Slice[T], fn func(T) U) gs.Slice[U] {
-	return gs.Map(s, fn)
+	return gs.SMap(s, fn)
 }
 
 func PartitionMap[T, A, B any](s gs.Slice[T], fn func(T) gs.Either[A, B]) (gs.Slice[A], gs.Slice[B]) {

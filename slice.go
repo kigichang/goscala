@@ -412,7 +412,7 @@ func ScanRight[T, U any](s []T, z U, fn func(T, U) U) []U {
 	return result
 }
 
-func Map[T, U any](s Slice[T], fn func(T) U) Slice[U] {
+func SMap[T, U any](s Slice[T], fn func(T) U) Slice[U] {
 	return FoldLeft[T, Slice[U]](
 		s, 
 		SliceEmpty[U](), 
