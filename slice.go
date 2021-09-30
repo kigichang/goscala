@@ -365,9 +365,9 @@ func (s Slice[T]) Sort(compare func(T, T) int) Slice[T] {
 	return s
 }
 
-func (s Slice[T]) Iter() Iter[T] {
-	return newIter(&s)
-}
+//func (s Slice[T]) Iter() Iter[T] {
+//	return newIter(&s)
+//}
 
 func SliceOne[T any](elem T) []T {
 	return []T{elem}
@@ -419,13 +419,13 @@ func ScanRight[T, U any](s []T, z U, fn func(T, U) U) []U {
 
 func SMap[T, U any](s Slice[T], fn func(T) U) Slice[U] {
 	return FoldLeft[T, Slice[U]](
-		s, 
-		SliceEmpty[U](), 
+		s,
+		SliceEmpty[U](),
 		func(z Slice[U], a T) Slice[U] {
-		z = append(z, fn(a))
-		return z
-	},
-)
+			z = append(z, fn(a))
+			return z
+		},
+	)
 }
 
 func FlatMap[T, U any](s Slice[T], fn func(T) Sliceable[U]) Slice[U] {
