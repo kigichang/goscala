@@ -1,6 +1,8 @@
 package slices
 
 import (
+	"constraints"
+	"sort"
 	gs "github.com/kigichang/goscala"
 )
 
@@ -139,78 +141,69 @@ func ScanRight[T, U any](s gs.Slice[T], z U, fn func(T, U) U) gs.Slice[U] {
 	return gs.ScanRight(s, z, fn)
 }
 
-//
-//func SliceGroupBy[T any, K comparable](s Slice[T], fn Func1[T, K]) Map[K, Slice[T]] {
-//
-//	return SliceGroupMap(
-//		s,
-//		fn,
-//		func(v T) T {
-//			return v
-//		},
-//	)
-//}
-//
-//func SliceGroupMap[T any, K comparable, V any](s Slice[T], key Func1[T, K], val Func1[T, V]) Map[K, Slice[V]] {
-//	ret := map[K]Slice[V]{}
-//
-//	for i := range s {
-//		k := key(s[i])
-//		v := val(s[i])
-//		ret[k] = append(ret[k], v)
-//	}
-//	return ret
-//}
-//
-//func SliceGroupMapReduce[T any, K comparable, V any](s Slice[T], key Func1[T, K], val Func1[T, V], fn Func2[V, V, V]) Map[K, V] {
-//	m := SliceGroupMap(s, key, val)
-//	ret := map[K]V{}
-//	for k := range m {
-//		ret[k] = m[k].Reduce(fn).Get()
-//	}
-//	return ret
-//}
-//
-//func sliceMaxBy[T any, B Ordered](s Slice[T], fn Func1[T, B], cmp CompareFunc[B]) Option[T] {
-//	size := s.Len()
-//	if size == 0 {
-//		return None[T]()
-//	}
-//
-//	if size == 1 {
-//		return Some[T](s[0])
-//	}
-//
-//	v := s[0]
-//	x := fn(s[0])
-//	for i := 1; i < size; i++ {
-//		y := fn(s[i])
-//		if cmp(x, y) < 0 {
-//			x = y
-//			v = s[i]
-//		}
-//	}
-//
-//	return Some[T](v)
-//}
-//
-//func SliceMaxBy[T any, B Ordered](s Slice[T], fn Func1[T, B]) Option[T] {
-//	return sliceMaxBy(s, fn, Compare[B])
-//}
-//
-//func SliceMinBy[T any, B Ordered](s Slice[T], fn Func1[T, B]) Option[T] {
-//	cmp := func(v1, v2 B) int {
-//		return -Compare(v1, v2)
-//	}
-//	return sliceMaxBy(s, fn, cmp)
-//}
-//
-//func SliceSortBy[T any, B Ordered](s Slice[T], fn Func1[T, B]) Slice[T] {
-//	sort.SliceStable(s, func(i, j int) bool {
-//		return fn(s[i]) < fn(s[j])
-//	})
-//	return s
-//}
+func GroupMap[T any, K comparable, V any](s gs.Slice[T], key func(T) K, val func(T) V) map[K]gs.Slice[V] {
+	ret := map[K]gs.Slice[V]{}
+	for i := range s {
+		k := key(s[i])
+		v := val(s[i])
+		ret[k] = append(ret[k], v)
+	}
+	return ret
+}
+
+func GroupBy[T any, K comparable](s gs.Slice[T], fn func(T) K) map[K]gs.Slice[T] {
+	return GroupMap(s,fn, gs.Id[T])
+}
+
+func GroupMapReduce[T any, K comparable, V any](s gs.Slice[T], key func(T) K, val func(T) V, fn func(V, V) V) map[K]V {
+	m := GroupMap(s, key, val)
+	ret := map[K]V{}
+	for k := range m {
+		ret[k], _ = m[k].Reduce(fn)
+	}
+	return ret
+}
+
+func maxBy[T any, B constraints.Ordered](s gs.Slice[T], fn func(T) B, cmp func(B, B) int) gs.Option[T] {
+	size := s.Len()
+	if size == 0 {
+		return gs.None[T]()
+	}
+
+	if size == 1 {
+		return gs.Some[T](s[0])
+	}
+
+	v := s[0]
+	x := fn(s[0])
+	for i := 1; i < size; i++ {
+		y := fn(s[i])
+		if cmp(x, y) < 0 {
+			x = y
+			v = s[i]
+		}
+	}
+
+	return gs.Some[T](v)
+}
+
+func MaxBy[T any, B constraints.Ordered](s gs.Slice[T], fn func(T) B) gs.Option[T] {
+	return maxBy(s, fn, gs.Compare[B])
+}
+
+func MinBy[T any, B constraints.Ordered](s gs.Slice[T], fn func(T) B) gs.Option[T] {
+	cmp := func(v1, v2 B) int {
+		return -gs.Compare(v1, v2)
+	}
+	return maxBy(s, fn, cmp)
+}
+
+func SortBy[T any, B constraints.Ordered](s gs.Slice[T], fn func(T) B) gs.Slice[T] {
+	sort.SliceStable(s, func(i, j int) bool {
+		return fn(s[i]) < fn(s[j])
+	})
+	return s
+}
 //
 //func SliceToMap[K comparable, V any](s Slice[Pair[K, V]]) Map[K, V] {
 //	ret := MakeMap[K, V](s.Len())

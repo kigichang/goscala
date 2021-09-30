@@ -150,3 +150,16 @@ func TestScanRight(t *testing.T) {
 	ans := slices.From(145, 144, 141, 136, 129, 120, 118, 114, 108, 100)
 	assert.True(t, dst.Equals(gs.Eq[int])(ans))
 }
+
+
+func TestGroupBy(t *testing.T) {
+	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
+
+	fn := func(v int) bool {
+		return (v & 0x01) == 0
+	}
+	m := slices.GroupBy(src, fn)
+
+	assert.Equal(t, m[true], slices.From(2, 4, 6, 8))
+	assert.Equal(t, m[false], slices.From(1, 3, 5, 7, 9))
+}

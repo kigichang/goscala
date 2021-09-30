@@ -38,6 +38,20 @@ func Map[T, U any](opt gs.Option[T], fn func(T) U) gs.Option[U] {
 	)(opt.Fetch)
 }
 
+func MapBool[T, U any](opt gs.Option[T], fn func(T) (U, bool)) gs.Option[U] {
+	return gs.Partial(
+		gs.FuncBoolAndThen(fn, Bool[U]),
+		gs.None[U],
+	)(opt.Fetch)
+}
+
+func MapErr[T, U any](opt gs.Option[T], fn func(T) (U, error)) gs.Option[U] {
+	return gs.Partial(
+		gs.FuncErrAndThen(fn, Err[U]),
+		gs.None[U],
+	)(opt.Fetch)
+}
+
 func Fold[T, U any](opt gs.Option[T]) func(U) func(func(T) U) U {
 	return func(z U) func(func(T) U) U {
 		return func(fn func(T) U) U {

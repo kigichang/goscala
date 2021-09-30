@@ -352,14 +352,3 @@ func TestSliceSort(t *testing.T) {
 	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
 	assert.True(t, src.Sort(gs.Compare[int]).Equals(gs.Eq[int])(slices.From(1, 2, 3, 4, 5, 6, 7, 8, 9)))
 }
-
-//
-//func TestSliceGroupBy(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn := func(v int) bool {
-//		return (v & 0x01) == 0
-//	}
-//	m := SliceGroupBy(src, fn)
-//	t.Log(m)
-//}
