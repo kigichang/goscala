@@ -1,7 +1,7 @@
 .PHONY: clean test
 
-GOROOT=${shell echo ${HOME}}/goroot
-GOPATH=${shell echo ${HOME}}/go2
+GOROOT=/Users/kigi/goroot
+GOPATH=/Users/kigi/go2
 PKG=github.com/kigichang/goscala
 
 test:

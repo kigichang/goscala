@@ -353,35 +353,6 @@ func TestSliceSort(t *testing.T) {
 	assert.True(t, src.Sort(gs.Compare[int]).Equals(gs.Eq[int])(slices.From(1, 2, 3, 4, 5, 6, 7, 8, 9)))
 }
 
-//func TestSliceScanLeft(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn := func(v1, v2 int) int {
-//		return v1 + v2
-//	}
-//
-//	dst := SliceScanLeft(src, 100, fn)
-//	ans := slices.From(100, 101, 104, 109, 116, 125, 127, 131, 137, 145)
-//	assert.True(t, dst.Equals(ans, Equal[int]))
-//
-//	dst = SliceScan(src, 100, fn)
-//	assert.True(t, dst.Equals(ans, Equal[int]))
-//}
-//
-//func TestSliceScanRight(t *testing.T) {
-//	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
-//
-//	fn := func(v1, v2 int) int {
-//		return v1 + v2
-//	}
-//	dst := SliceScanRight(src, 100, fn)
-//	ans := slices.From(145, 144, 141, 136, 129, 120, 118, 114, 108, 100)
-//	assert.True(t, dst.Equals(ans, Equal[int]))
-//}
-//
-
-
-
 //
 //func TestSliceGroupBy(t *testing.T) {
 //	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)

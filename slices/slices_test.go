@@ -124,3 +124,29 @@ func TestPartitionMap(t *testing.T) {
 	assert.True(t, slices.From(11, 13, 15, 17, 19).Equals(gs.Eq[int])(a))
 	assert.True(t, slices.From(2, 4, 6, 8).Equals(gs.Eq[int])(b))
 }
+
+func TestScanLeft(t *testing.T) {
+	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
+
+	fn := func(v1, v2 int) int {
+		return v1 + v2
+	}
+
+	dst := slices.ScanLeft(src, 100, fn)
+	ans := slices.From(100, 101, 104, 109, 116, 125, 127, 131, 137, 145)
+	assert.True(t, dst.Equals(gs.Eq[int])(ans))
+
+	dst = slices.Scan(src, 100, fn)
+	assert.True(t, dst.Equals(gs.Eq[int])(ans))
+}
+
+func TestScanRight(t *testing.T) {
+	var src = slices.From(1, 3, 5, 7, 9, 2, 4, 6, 8)
+
+	fn := func(v1, v2 int) int {
+		return v1 + v2
+	}
+	dst := slices.ScanRight(src, 100, fn)
+	ans := slices.From(145, 144, 141, 136, 129, 120, 118, 114, 108, 100)
+	assert.True(t, dst.Equals(gs.Eq[int])(ans))
+}

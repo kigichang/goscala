@@ -127,35 +127,18 @@ func PartitionMap[T, A, B any](s gs.Slice[T], fn func(T) gs.Either[A, B]) (gs.Sl
 	return a, b
 }
 
-//
-//func SliceScanLeft[T, U any](s Slice[T], z U, fn Func2[U, T, U]) Slice[U] {
-//	ret := MakeSlice[U](s.Len() + 1)
-//	ret[0] = z
-//
-//	for i := range s {
-//		z = fn(z, s[i])
-//		ret[i+1] = z
-//	}
-//
-//	return ret
-//}
-//
-//func SliceScanRight[T, U any](s Slice[T], z U, fn Func2[T, U, U]) Slice[U] {
-//	size := s.Len()
-//	ret := MakeSlice[U](size + 1)
-//	ret[size] = z
-//
-//	for i := range s {
-//		z = fn(s[size-1-i], z)
-//		ret[size-1-i] = z
-//	}
-//
-//	return ret
-//}
-//
-//func SliceScan[T, U any](s Slice[T], z U, fn Func2[U, T, U]) Slice[U] {
-//	return SliceScanLeft(s, z, fn)
-//}
+func ScanLeft[T, U any](s gs.Slice[T], z U, fn func(U, T) U) gs.Slice[U] {
+	return gs.ScanLeft(s, z, fn)
+}
+
+func Scan[T, U any](s gs.Slice[T], z U, fn func(U, T) U) gs.Slice[U] {
+	return ScanLeft(s, z, fn)
+}
+
+func ScanRight[T, U any](s gs.Slice[T], z U, fn func(T, U) U) gs.Slice[U] {
+	return gs.ScanRight(s, z, fn)
+}
+
 //
 //func SliceGroupBy[T any, K comparable](s Slice[T], fn Func1[T, K]) Map[K, Slice[T]] {
 //
