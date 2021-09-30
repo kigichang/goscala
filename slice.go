@@ -365,9 +365,14 @@ func (s Slice[T]) Sort(compare func(T, T) int) Slice[T] {
 	return s
 }
 
+func (s Slice[T]) Iter() Iter[T] {
+	return newIter(&s)
+}
+
 func SliceOne[T any](elem T) []T {
 	return []T{elem}
 }
+
 func SliceEmpty[T any]() []T {
 	return []T{}
 }

@@ -18,6 +18,8 @@ type Map[K comparable, V any] interface {
 	Foreach(func(K, V))
 	Partition(func(K, V) bool) (Map[K, V], Map[K, V])
 	GetOrElse(K, V) V
+
+	Slice() Slice[Pair[K, V]]
 }
 
 type _map[K comparable, V any] map[K]V
@@ -132,6 +134,16 @@ func (m _map[K, V]) Partition(p func(K, V) bool) (Map[K, V], Map[K, V]) {
 
 func (m _map[K, V]) GetOrElse(key K, z V) V {
 	return GetOrElse(m.Get(key))(z)
+}
+
+func (m _map[K, V]) Slice() Slice[Pair[K, V]] {
+	ret := make([]Pair[K, V], len(m))
+
+	i := 0
+	for k := range m {
+		ret[i] = P(k, m[k])
+	}
+	return ret
 }
 
 func MkMap[K comparable, V any](a ...int) Map[K, V] {

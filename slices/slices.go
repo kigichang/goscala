@@ -204,16 +204,15 @@ func SortBy[T any, B constraints.Ordered](s gs.Slice[T], fn func(T) B) gs.Slice[
 	})
 	return s
 }
-//
-//func SliceToMap[K comparable, V any](s Slice[Pair[K, V]]) Map[K, V] {
-//	ret := MakeMap[K, V](s.Len())
-//
-//	for i := range s {
-//		ret[s[i].Key()] = s[i].Value()
-//	}
-//
-//	return ret
-//}
+
+func ToMap[K comparable, V any](s gs.Slice[gs.Pair[K, V]]) gs.Map[K, V] {
+	ret := gs.MkMap[K, V](s.Len())
+
+	for i := range s {
+		ret.Add(s[i])
+	}
+	return ret
+}
 //
 //func SliceToSet[K comparable](s Slice[K]) Set[K] {
 //	ret := MakeMap[K, bool](s.Len())
