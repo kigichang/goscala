@@ -30,3 +30,8 @@ func PartialErr[T, U any](succ func(T) U, fail func(error) U) func(func() (T, er
 	}
 }
 
+func GetOrElse[T any](v T, ok bool) func(T) T {
+	return func(z T) T {
+		return Cond(ok, v, z)
+	}
+}

@@ -25,3 +25,10 @@ func (p *pair[K, V]) Value() V {
 func (p *pair[K, V]) Get() (K, V) {
 	return p.key, p.val
 }
+
+func P[K comparable, V any](k K, v V) Pair[K, V] {
+	return &pair[K, V] { 
+		key: k, 
+		val: v,
+	}
+}
