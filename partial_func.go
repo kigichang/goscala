@@ -1,6 +1,6 @@
 package goscala
 
-func PFV[T, U any](succ func(T) U, fail func() U) func(T, bool) U {
+func PartialV[T, U any](succ func(T) U, fail func() U) func(T, bool) U {
 	return func(v T, ok bool) U {
 		if ok {
 			return succ(v)
@@ -9,13 +9,13 @@ func PFV[T, U any](succ func(T) U, fail func() U) func(T, bool) U {
 	}
 }
 
-func PFF[T, U any](succ func(T) U, fail func() U) func(func() (T, bool)) U {
+func Partial[T, U any](succ func(T) U, fail func() U) func(func() (T, bool)) U {
 	return func(pf func() (T, bool)) U {
-		return PFV(succ, fail)(pf())
+		return PartialV(succ, fail)(pf())
 	}
 }
 
-func PFErrV[T, U any](succ func(T) U, fail func(error) U) func(T, error) U {
+func PartialErrV[T, U any](succ func(T) U, fail func(error) U) func(T, error) U {
 	return func(v T, err error) U {
 		if err == nil {
 			return succ(v)
@@ -24,9 +24,14 @@ func PFErrV[T, U any](succ func(T) U, fail func(error) U) func(T, error) U {
 	}
 }
 
-func PFErrF[T, U any](succ func(T) U, fail func(error) U) func(func() (T, error)) U {
+func PartialErr[T, U any](succ func(T) U, fail func(error) U) func(func() (T, error)) U {
 	return func(pf func() (T, error)) U {
-		return PFErrV(succ, fail)(pf())
+		return PartialErrV(succ, fail)(pf())
 	}
 }
 
+func GetOrElse[T any](v T, ok bool) func(T) T {
+	return func(z T) T {
+		return Cond(ok, v, z)
+	}
+}

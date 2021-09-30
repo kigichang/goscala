@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kigichang/goscala"
+	gs "github.com/kigichang/goscala"
 	"github.com/kigichang/goscala/opt"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSome(t *testing.T) {
 	v := 0
-	o := goscala.Some[int](v)
+	o := gs.Some[int](v)
 	t.Log(o)
 	assert.Equal(t, true, o.IsDefined())
 	assert.Equal(t, v, o.Get())
@@ -21,7 +21,7 @@ func TestSome(t *testing.T) {
 	assert.True(t, ok)
 
 	v = 1
-	o = goscala.Some[int](v)
+	o = gs.Some[int](v)
 	assert.Equal(t, true, o.IsDefined())
 	assert.Equal(t, v, o.Get())
 
@@ -31,7 +31,7 @@ func TestSome(t *testing.T) {
 }
 
 func TestNone(t *testing.T) {
-	o := goscala.None[int]()
+	o := gs.None[int]()
 	t.Log(o)
 	assert.Equal(t, false, o.IsDefined())
 	assert.Panics(t, func() { o.Get() })
@@ -81,15 +81,13 @@ func TestMakeWitErr(t *testing.T) {
 }
 
 func TestOptionContains(t *testing.T) {
-	o := goscala.Some(100)
-	eq := o.Contains(goscala.Eq[int])
-	assert.True(t, eq(100))
-	assert.False(t, eq(101))
+	o := gs.Some(100)
+	assert.True(t, o.Contains(100, gs.Eq[int]))
+	assert.False(t, o.Contains(101, gs.Eq[int]))
 
-	o = goscala.None[int]()
-	eq = o.Contains(goscala.Eq[int])
-	assert.False(t, eq(0))
-	assert.False(t, eq(100))
+	o = gs.None[int]()
+	assert.False(t, o.Contains(0, gs.Eq[int]))
+	assert.False(t, o.Contains(100, gs.Eq[int]))
 }
 
 func TestOptionExists(t *testing.T) {
@@ -98,34 +96,34 @@ func TestOptionExists(t *testing.T) {
 		return v > 0
 	}
 
-	o := goscala.Some(1)
+	o := gs.Some(1)
 	assert.True(t, o.Exists(p))
 
-	o = goscala.Some(-1)
+	o = gs.Some(-1)
 	assert.False(t, o.Exists(p))
 
-	o = goscala.None[int]()
+	o = gs.None[int]()
 	assert.False(t, o.Exists(p))
 }
 
 func TestOptionEquals(t *testing.T) {
-	o := goscala.Some(100)
-	eq := o.Equals(goscala.Eq[int])
+	o := gs.Some(100)
+	eq := o.Equals(gs.Eq[int])
 
 	assert.True(t, eq(o))
-	assert.True(t, eq(goscala.Some(100)))
-	assert.False(t, eq(goscala.Some(101)))
-	assert.False(t, eq(goscala.None[int]()))
+	assert.True(t, eq(gs.Some(100)))
+	assert.False(t, eq(gs.Some(101)))
+	assert.False(t, eq(gs.None[int]()))
 
-	o = goscala.None[int]()
-	eq = o.Equals(goscala.Eq[int])
-	assert.False(t, eq(goscala.Some(0)))
-	assert.False(t, eq(goscala.Some(100)))
-	assert.True(t, eq(goscala.None[int]()))
+	o = gs.None[int]()
+	eq = o.Equals(gs.Eq[int])
+	assert.False(t, eq(gs.Some(0)))
+	assert.False(t, eq(gs.Some(100)))
+	assert.True(t, eq(gs.None[int]()))
 }
 
 func TestOptionFilter(t *testing.T) {
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 
 	f1 := func(v int) bool {
 		return v == 100
@@ -142,7 +140,7 @@ func TestOptionFilter(t *testing.T) {
 	s2 := s.Filter(f2)
 	assert.Equal(t, false, s2.IsDefined())
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 
 	s1 = n.Filter(f1)
 	assert.Equal(t, false, s1.IsDefined())
@@ -152,7 +150,7 @@ func TestOptionFilter(t *testing.T) {
 }
 
 func TestOptionFilterNot(t *testing.T) {
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 
 	f1 := func(v int) bool {
 		return v == 100
@@ -169,7 +167,7 @@ func TestOptionFilterNot(t *testing.T) {
 	assert.Equal(t, s.IsDefined(), s2.IsDefined())
 	assert.Equal(t, s.Get(), s2.Get())
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 
 	s1 = n.FilterNot(f1)
 	assert.Equal(t, false, s1.IsDefined())
@@ -179,7 +177,7 @@ func TestOptionFilterNot(t *testing.T) {
 }
 
 func TestOptionForall(t *testing.T) {
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 
 	f1 := func(v int) bool {
 		return v == 100
@@ -192,14 +190,14 @@ func TestOptionForall(t *testing.T) {
 	assert.Equal(t, true, s.Forall(f1))
 	assert.Equal(t, false, s.Forall(f2))
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 	assert.Equal(t, true, n.Forall(f1))
 	assert.Equal(t, true, n.Forall(f2))
 }
 
 func TestOptionForeach(t *testing.T) {
 	sum := 123
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 	f := func(v int) {
 		sum += v
 	}
@@ -207,27 +205,27 @@ func TestOptionForeach(t *testing.T) {
 	assert.Equal(t, 123+100, sum)
 
 	sum = 123
-	n := goscala.None[int]()
+	n := gs.None[int]()
 	n.Foreach(f)
 	assert.Equal(t, 123, sum)
 }
 
 func TestOptionGetOrElse(t *testing.T) {
-	s := goscala.Some[int](100)
+	s := gs.Some[int](100)
 	assert.Equal(t, 100, s.GetOrElse(-1))
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 	assert.Equal(t, -1, n.GetOrElse(-1))
 }
 
 func TestOptionOrElse(t *testing.T) {
-	s := goscala.Some[int](100)
-	f := goscala.Some[int](1)
+	s := gs.Some[int](100)
+	f := gs.Some[int](1)
 
 	assert.Equal(t, s.IsDefined(), s.OrElse(f).IsDefined())
 	assert.Equal(t, s.Get(), s.OrElse(f).Get())
 
-	n := goscala.None[int]()
+	n := gs.None[int]()
 	assert.Equal(t, true, n.OrElse(f).IsDefined())
 	assert.Equal(t, 1, n.OrElse(f).Get())
 }
