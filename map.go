@@ -6,6 +6,7 @@ import (
 )
 
 type Map[K comparable, V any] interface {
+	Len() int
 	Keys() Slice[K]
 	Values() Slice[V]
 	Add(Pair[K, V])
@@ -44,6 +45,10 @@ func (i *_mapIter[K, V]) Get() (K, V) {
 }
 
 type _map[K comparable, V any] map[K]V
+
+func (m _map[K, V]) Len() int {
+	return len(m)
+}
 
 func (m _map[K, V]) Keys() Slice[K] {
 	ret := make([]K, len(m))
