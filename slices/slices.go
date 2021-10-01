@@ -1,8 +1,14 @@
+// Copyright © 2021 Kigi Chang <kigi.chang@gmail.com>
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+
 package slices
 
 import (
 	"constraints"
 	"sort"
+
 	gs "github.com/kigichang/goscala"
 )
 
@@ -152,7 +158,7 @@ func GroupMap[T any, K comparable, V any](s gs.Slice[T], key func(T) K, val func
 }
 
 func GroupBy[T any, K comparable](s gs.Slice[T], fn func(T) K) map[K]gs.Slice[T] {
-	return GroupMap(s,fn, gs.Id[T])
+	return GroupMap(s, fn, gs.Id[T])
 }
 
 func GroupMapReduce[T any, K comparable, V any](s gs.Slice[T], key func(T) K, val func(T) V, fn func(V, V) V) map[K]V {
@@ -213,6 +219,7 @@ func ToMap[K comparable, V any](s gs.Slice[gs.Pair[K, V]]) gs.Map[K, V] {
 	}
 	return ret
 }
+
 //
 //func SliceToSet[K comparable](s Slice[K]) Set[K] {
 //	ret := MakeMap[K, bool](s.Len())

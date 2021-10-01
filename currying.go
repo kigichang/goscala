@@ -1,3 +1,8 @@
+// Copyright © 2021 Kigi Chang <kigi.chang@gmail.com>
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+
 package goscala
 
 func Currying2[A, B, C any](f func(A, B) C) func(A) func(B) C {
