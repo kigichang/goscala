@@ -1,6 +1,12 @@
 package goscala
 
+import (
+	"reflect"
+	"github.com/kigichang/goscala/iter/pair"
+)
+
 type Map[K comparable, V any] interface {
+	Len() int
 	Keys() Slice[K]
 	Values() Slice[V]
 	Add(Pair[K, V])
@@ -20,9 +26,29 @@ type Map[K comparable, V any] interface {
 	GetOrElse(K, V) V
 
 	Slice() Slice[Pair[K, V]]
+	Range() pair.Iter[K, V]
+}
+
+type _mapIter[K comparable, V any] struct {
+	iter *reflect.MapIter
+}
+
+func (i *_mapIter[K, V]) Next() bool {
+	return i.iter.Next()
+}
+
+func (i *_mapIter[K, V]) Get() (K, V) {
+	k := i.iter.Key().Interface()
+	v := i.iter.Value().Interface()
+
+	return k.(K), v.(V)
 }
 
 type _map[K comparable, V any] map[K]V
+
+func (m _map[K, V]) Len() int {
+	return len(m)
+}
 
 func (m _map[K, V]) Keys() Slice[K] {
 	ret := make([]K, len(m))
@@ -144,6 +170,12 @@ func (m _map[K, V]) Slice() Slice[Pair[K, V]] {
 		ret[i] = P(k, m[k])
 	}
 	return ret
+}
+
+func (m _map[K, V]) Range() pair.Iter[K, V] {
+	return &_mapIter[K, V] {
+		iter: reflect.ValueOf(m).MapRange(),
+	}
 }
 
 func MkMap[K comparable, V any](a ...int) Map[K, V] {
