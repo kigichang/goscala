@@ -2,6 +2,7 @@ package goscala
 
 import (
 	"reflect"
+	"github.com/kigichang/goscala/iter/pair"
 )
 
 type Map[K comparable, V any] interface {
@@ -24,7 +25,7 @@ type Map[K comparable, V any] interface {
 	GetOrElse(K, V) V
 
 	Slice() Slice[Pair[K, V]]
-	Range() PairIter[K, V]
+	Range() pair.Iter[K, V]
 }
 
 type _mapIter[K comparable, V any] struct {
@@ -166,7 +167,7 @@ func (m _map[K, V]) Slice() Slice[Pair[K, V]] {
 	return ret
 }
 
-func (m _map[K, V]) Range() PairIter[K, V] {
+func (m _map[K, V]) Range() pair.Iter[K, V] {
 	return &_mapIter[K, V] {
 		iter: reflect.ValueOf(m).MapRange(),
 	}

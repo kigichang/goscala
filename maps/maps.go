@@ -43,3 +43,24 @@ func CollectMap[K1, K2 comparable, V1, V2 any](m gs.Map[K1, V1], pf func(K1, V1)
 	}
 	return ret
 }
+
+func CollectFirst[K comparable, V, T any](m gs.Map[K, V], pf func(K, V) (T, bool)) gs.Option[T] {
+	iter := m.Range()
+
+	for iter.Next() {
+		if v, ok := pf(iter.Get()); ok {
+			gs.Some[T](v)
+		}
+	}
+	return gs.None[T]()
+}
+
+func FlatMapSlice[K comparable, V, T any](m gs.Map[K, V], fn func(K, V) gs.Sliceable[T]) gs.Slice[T] {
+	ret := slices.Empty[T]()
+
+	iter := m.Range()
+	for iter.Next() {
+		ret = append(ret, fn(iter.Get()).Slice()...)
+	}
+	return ret
+}
