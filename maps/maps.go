@@ -2,6 +2,7 @@ package maps
 
 import (
 	gs "github.com/kigichang/goscala"
+	"github.com/kigichang/goscala/opt"
 	"github.com/kigichang/goscala/slices"
 )
 
@@ -43,4 +44,12 @@ func CollectMap[K1, K2 comparable, V1, V2 any](m gs.Map[K1, V1], pf func(K1, V1)
 	)
 
 	return From[K2, V2](s...)
+}
+
+func CollectFirst[K comparable, V, T any](m gs.Map[K, V], pf func(K, V) (T, bool)) gs.Option[T] {
+	pf2 := func(p gs.Pair[K, V]) (T, bool) {
+		return pf(p.Key(), p.Value())
+	}
+	
+	return opt.Bool[T](slices.CollectFirst(m.Slice(), pf2))
 }
