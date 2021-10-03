@@ -35,14 +35,6 @@ func (f *_future[T]) Completed() bool {
 	return f.completed
 }
 
-//func (f *_future[T]) Context() context.Context {
-//	return f.ctx
-//}
-
-//func (f *_future[T]) Value() gs.Try[T] {
-//	return f.val
-//}
-
 func (f *_future[T]) PassValue() context.Context {
 	return withValue(f.ctx, &f.val, &f.completed)
 }
@@ -88,9 +80,37 @@ func (f *_future[T]) Result(atMost time.Duration) (ret T, err error) {
 	return
 }
 
-func Err[T any](ctx context.Context, fn func() (T, error)) gs.Future[T] {
+func (f *_future[T]) Filter(ctx context.Context, p func(T) bool) gs.Future[T] {
+	return TransformWith[T, T](ctx, f, func(a gs.Try[T]) gs.Future[T] {
+		if a.IsSuccess() {
+			if p(a.Success()) {
+				return Err[T](ctx, func() (ret T, _ error) {
+					ret = a.Success()
+					return
+				})
+			}
+
+			return Err[T](ctx, func() (_ T, err error) {
+				err = gs.ErrUnsatisfied
+				return
+			})
+		}
+
+		return Err[T](ctx, func() (_ T, err error) {
+			err = a.Failed()
+			return
+		})
+	})
+}
+
+func future[T any](ctx context.Context) *_future[T] {
 	f := &_future[T]{}
 	f.ctx, f.cancel = context.WithCancel(ctx)
+	return f
+}
+
+func Err[T any](ctx context.Context, fn func() (T, error)) gs.Future[T] {
+	f := future[T](ctx)
 
 	go func(x *_future[T]) {
 		x.val = try.Err(fn())
@@ -101,56 +121,68 @@ func Err[T any](ctx context.Context, fn func() (T, error)) gs.Future[T] {
 }
 
 func Map[T, U any](ctx context.Context, a gs.Future[T], fn func(T) U) gs.Future[U] {
-	f := &_future[U]{}
-	f.ctx, f.cancel = context.WithCancel(ctx)
+	return Transform(ctx, a, func(x gs.Try[T]) gs.Try[U] {
+		return try.Map(x, fn)
+	})
+}
+
+func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future[U]) gs.Future[U] {
+	return TransformWith(ctx, a, func(x gs.Try[T]) gs.Future[U] {
+		if x.IsSuccess() {
+			return fn(x.Success())
+		}
+
+		return Err[U](ctx, func() (ret U, err error) {
+			err = x.Failed()
+			return
+		})
+	})
+}
+
+func Transform[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T]) gs.Try[U]) gs.Future[U] {
+	f := future[U](ctx)
 
 	go func(apv context.Context, x *_future[U]) {
 		select {
 		case <-apv.Done():
 			v, completed := resulted[T](apv)
 			if completed {
-				x.val = try.Map(v, fn)
-				x.completed = true
+				f.val = fn(v)
+				f.completed = true
 			}
 			x.cancel()
 		case <-x.ctx.Done():
-			// maybe cancelled.
+
 		}
 	}(a.PassValue(), f)
 
 	return f
 }
 
-func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future[U]) gs.Future[U] {
-	f := &_future[U]{}
-	f.ctx, f.cancel = context.WithCancel(ctx)
+func TransformWith[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T]) gs.Future[U]) gs.Future[U] {
+	f := future[U](ctx)
 
 	go func(apv context.Context, x *_future[U]) {
 		select {
 		case <-apv.Done():
 			v, completed := resulted[T](apv)
 			if completed {
-				if v.IsSuccess() {
-					g := fn(v.Success())
-					go func(gpv context.Context, y *_future[U]) {
-						select {
-						case <-gpv.Done():
-							v2, completed2 := resulted[U](gpv)
-							if completed2 {
-								y.val = v2
-								y.completed = true
-							}
-							y.cancel()
-						case <-y.ctx.Done():
-							// maybe concelled
-						}
+				b := fn(v)
 
-					}(g.PassValue(), f)
-				} else {
-					x.val = gs.Failure[U](v.Failed())
-					x.completed = true
-					x.cancel()
-				}
+				go func(bpv context.Context, y *_future[U]) {
+					select {
+					case <-bpv.Done():
+						v2, completed2 := resulted[U](bpv)
+						if completed2 {
+							y.val = v2
+							y.completed = true
+						}
+						y.cancel()
+					case <-y.ctx.Done():
+						// maybe cancelled.
+					}
+
+				}(b.PassValue(), x)
 			} else {
 				x.cancel()
 			}
