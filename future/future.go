@@ -8,6 +8,7 @@ package future
 import (
 	"context"
 	"fmt"
+	"time"
 
 	gs "github.com/kigichang/goscala"
 	"github.com/kigichang/goscala/try"
@@ -34,21 +35,21 @@ func (f *_future[T]) Completed() bool {
 	return f.completed
 }
 
-func (f *_future[T]) Context() context.Context {
-	return f.ctx
-}
+//func (f *_future[T]) Context() context.Context {
+//	return f.ctx
+//}
 
-func (f *_future[T]) Value() gs.Try[T] {
-	return f.val
-}
+//func (f *_future[T]) Value() gs.Try[T] {
+//	return f.val
+//}
 
-func (f *_future[T]) Pass() context.Context {
+func (f *_future[T]) PassValue() context.Context {
 	return withValue(f.ctx, &f.val, &f.completed)
 }
 
 func (f *_future[T]) OnComplete(fn func(gs.Try[T])) {
 	go func(x *_future[T]) {
-		ctx := x.Pass()
+		ctx := x.PassValue()
 		<-ctx.Done()
 		v, compleleted := resulted[T](ctx)
 		if compleleted {
@@ -70,6 +71,23 @@ func (f *_future[T]) Wait() {
 	<-f.ctx.Done()
 }
 
+func (f *_future[T]) Result(atMost time.Duration) (ret T, err error) {
+	wait, cancel := context.WithTimeout(context.Background(), atMost)
+	defer cancel()
+
+	select {
+	case <-f.ctx.Done():
+		if f.completed {
+			ret, err = f.val.FetchErr()
+			return
+		}
+		err = f.ctx.Err()
+	case <-wait.Done():
+		err = wait.Err()
+	}
+	return
+}
+
 func Err[T any](ctx context.Context, fn func() (T, error)) gs.Future[T] {
 	f := &_future[T]{}
 	f.ctx, f.cancel = context.WithCancel(ctx)
@@ -86,19 +104,19 @@ func Map[T, U any](ctx context.Context, a gs.Future[T], fn func(T) U) gs.Future[
 	f := &_future[U]{}
 	f.ctx, f.cancel = context.WithCancel(ctx)
 
-	go func(ap context.Context, x *_future[U]) {
+	go func(apv context.Context, x *_future[U]) {
 		select {
-		case <-ap.Done():
-			v, completed := resulted[T](ap)
+		case <-apv.Done():
+			v, completed := resulted[T](apv)
 			if completed {
 				x.val = try.Map(v, fn)
 				x.completed = true
 			}
 			x.cancel()
 		case <-x.ctx.Done():
-
+			// maybe cancelled.
 		}
-	}(a.Pass(), f)
+	}(a.PassValue(), f)
 
 	return f
 }
@@ -107,36 +125,39 @@ func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future
 	f := &_future[U]{}
 	f.ctx, f.cancel = context.WithCancel(ctx)
 
-	go func(ap context.Context, x *_future[U]) {
+	go func(apv context.Context, x *_future[U]) {
 		select {
-		case <-ap.Done():
-			v, completed := resulted[T](ap)
+		case <-apv.Done():
+			v, completed := resulted[T](apv)
 			if completed {
 				if v.IsSuccess() {
 					g := fn(v.Success())
-					go func(gp context.Context, y *_future[U]) {
+					go func(gpv context.Context, y *_future[U]) {
 						select {
-						case <-gp.Done():
-							v2, completed2 := resulted[U](gp)
+						case <-gpv.Done():
+							v2, completed2 := resulted[U](gpv)
 							if completed2 {
 								y.val = v2
 								y.completed = true
 							}
 							y.cancel()
 						case <-y.ctx.Done():
+							// maybe concelled
 						}
 
-					}(g.Pass(), f)
+					}(g.PassValue(), f)
 				} else {
-					f.val = gs.Failure[U](v.Failed())
-					f.completed = true
-					f.cancel()
+					x.val = gs.Failure[U](v.Failed())
+					x.completed = true
+					x.cancel()
 				}
+			} else {
+				x.cancel()
 			}
 		case <-x.ctx.Done():
-
+			// maybe cancelled
 		}
-	}(a.Pass(), f)
+	}(a.PassValue(), f)
 
 	return f
 }

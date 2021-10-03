@@ -3,6 +3,7 @@ package future_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	gs "github.com/kigichang/goscala"
 	"github.com/kigichang/goscala/future"
@@ -14,7 +15,10 @@ func TestErr(t *testing.T) {
 	f.Wait()
 	t.Log(f)
 	assert.True(t, f.Completed())
-	assert.Equal(t, 0, f.Value().Get())
+
+	v, err := f.Result(time.Second)
+	assert.Equal(t, 0, v)
+	assert.Nil(t, err)
 }
 
 func TestFlatMapAndMap(t *testing.T) {
