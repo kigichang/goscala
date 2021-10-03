@@ -30,4 +30,3 @@ func FoldV[T, C, U any](succ func(T) U, fail func(C) U) func(T, C) U {
 		return fail(c)
 	}
 }
-

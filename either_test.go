@@ -121,7 +121,6 @@ func TestEitherForall(t *testing.T) {
 	assert.Equal(t, true, goscala.Left[int, int](0).Forall(p2))
 }
 
-
 func TestEitherForeach(t *testing.T) {
 	r := goscala.Right[int, string]("right")
 	str := "hello"
@@ -147,8 +146,6 @@ func TestEitherGetOrElse(t *testing.T) {
 	assert.Equal(t, 17, goscala.Left[int, int](12).GetOrElse(17))
 }
 
-
-
 func TestEitherSWap(t *testing.T) {
 	/*
 	   val left: Either[String, Int]  = Left("left")
@@ -173,7 +170,7 @@ func TestEitherSWap(t *testing.T) {
 	//		return v1 * v2
 	//	})
 	//})
-//
+	//
 	//assert.Equal(t, true, result.IsRight())
 	//assert.Equal(t, 2*3, result.Get())
 

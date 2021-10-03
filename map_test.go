@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	gs "github.com/kigichang/goscala"
-	"github.com/kigichang/goscala/slices"
 	"github.com/kigichang/goscala/maps"
+	"github.com/kigichang/goscala/slices"
 	"github.com/stretchr/testify/assert"
 )
 
