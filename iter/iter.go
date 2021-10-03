@@ -141,3 +141,40 @@ func ScanRight[T, U any](a Iter[T], z U, fn func(T, U) U) Iter[U] {
 		return fn(b, a)
 	}))
 }
+
+func Forall[T any](a Iter[T], fn func(T) bool) bool {
+	for a.Next() {
+		if !fn(a.Get()) {
+			return false
+		}
+	}
+	return true
+}
+
+func Foreach[T any](a Iter[T], fn func(T)) {
+	for a.Next() {
+		fn(a.Get())
+	}
+}
+
+func Filter[T any](a Iter[T], p func(T) bool) Iter[T] {
+	return &abstractIter[T]{
+		next: func() bool {
+			for a.Next() {
+				if p(a.Get()) {
+					return true
+				}
+			}
+			return false
+		},
+		get: func() T {
+			return a.Get()
+		},
+	}
+}
+
+func FilterNot[T any](a Iter[T], p func(T) bool) Iter[T] {
+	return Filter(a, func(v T) bool {
+		return !p(v)
+	})
+}
