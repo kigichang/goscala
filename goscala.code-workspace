@@ -15,6 +15,7 @@
 		"go.coverageOptions": "showUncoveredCodeOnly",
 		"go.coverageDecorator": {
 			"type": "gutter"
-		}
+		},
+		"editor.bracketPairColorization.enabled": true
 	}
 }
