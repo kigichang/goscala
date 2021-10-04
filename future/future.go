@@ -126,6 +126,18 @@ func Map[T, U any](ctx context.Context, a gs.Future[T], fn func(T) U) gs.Future[
 	})
 }
 
+func MapErr[T, U any](ctx context.Context, a gs.Future[T], fn func(T) (U, error)) gs.Future[U] {
+	return Transform(ctx, a, func(x gs.Try[T]) gs.Try[U] {
+		return try.MapErr(x, fn)
+	})
+}
+
+func MapBool[T, U any](ctx context.Context, a gs.Future[T], fn func(T) (U, bool)) gs.Future[U] {
+	return Transform(ctx, a, func(x gs.Try[T]) gs.Try[U] {
+		return try.MapBool(x, fn)
+	})
+}
+
 func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future[U]) gs.Future[U] {
 	return TransformWith(ctx, a, func(x gs.Try[T]) gs.Future[U] {
 		if x.IsSuccess() {
