@@ -11,7 +11,7 @@ import (
 )
 
 func TestErr(t *testing.T) {
-	f := future.Err(context.Background(), func() (int, error) { return 0, nil })
+	f := future.Err(func() (int, error) { return 0, nil })
 	f.Wait()
 	t.Log(f)
 	assert.True(t, f.Completed())
@@ -22,8 +22,8 @@ func TestErr(t *testing.T) {
 }
 
 func TestFlatMapAndMap(t *testing.T) {
-	f := future.Err(context.Background(), func() (int, error) { return 5, nil })
-	g := future.Err(context.Background(), func() (int, error) { return 3, nil })
+	f := future.Err(func() (int, error) { return 5, nil })
+	g := future.Err(func() (int, error) { return 3, nil })
 
 	h := future.FlatMap(context.Background(), f, func(a int) gs.Future[int] {
 		return future.Map(context.Background(), g, func(b int) int {
@@ -45,7 +45,7 @@ func TestFilter(t *testing.T) {
 		Await.result(h, Duration.Zero) // throw a NoSuchElementException
 	*/
 
-	f := future.Err(context.Background(), func() (int, error) {
+	f := future.Err(func() (int, error) {
 		return 5, nil
 	})
 
