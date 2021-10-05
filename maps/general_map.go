@@ -64,6 +64,11 @@ func (g *generalMap[K, V]) Get(k K) (ret V, ok bool) {
 	return
 }
 
+func (g *generalMap[K, V]) Contains(k K) (ok bool) {
+	_, ok = g.Get(k)
+	return
+}
+
 func (g *generalMap[K, V]) Delete(k K) {
 	m := g.abstractMap.mapRanger.(_map[K, V])
 	delete(m, k)
