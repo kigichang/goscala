@@ -13,7 +13,7 @@ import (
 )
 
 func Make[K comparable, V any](a ...int) gs.Map[K, V] {
-	return gs.MkMap[K, V](a...)
+	return newGeneralMap[K, V](a...)
 }
 
 func Empty[K comparable, V any]() gs.Map[K, V] {
@@ -73,7 +73,7 @@ func FlatMapSlice[K comparable, V, T any](m gs.Map[K, V], fn func(K, V) gs.Slice
 }
 
 func FlatMap[K1, K2 comparable, V1, V2 any](m gs.Map[K1, V1], fn func(K1, V1) gs.Sliceable[gs.Pair[K2, V2]]) gs.Map[K2, V2] {
-	return slices.ToMap(FlatMapSlice(m, fn))
+	return ToMap(FlatMapSlice(m, fn)...)
 }
 
 func GroupMap[K1, K2 comparable, V1, V2 any](m gs.Map[K1, V1], groupBy func(K1, V1) K2, op func(K1, V1) V2) gs.Map[K2, gs.Slice[V2]] {
@@ -107,7 +107,7 @@ func GroupBy[K, K1 comparable, V any](m gs.Map[K, V], groupBy func(K, V) K1) gs.
 
 	for it.Next() {
 		k, v := it.Get()
-		ret.Put(k, slices.ToMap(v))
+		ret.Put(k, ToMap(v...))
 	}
 
 	return ret
@@ -173,4 +173,8 @@ func PartitionMap[K comparable, V, A, B any](m gs.Map[K, V], fn func(K, V) gs.Ei
 	return slices.PartitionMap(m.Slice(), func(p gs.Pair[K, V]) gs.Either[A, B] {
 		return fn(p.Key(), p.Value())
 	})
+}
+
+func ToMap[K comparable, V any](pairs ...gs.Pair[K, V]) gs.Map[K, V] {
+	return formGeneralMap[K, V](pairs...)
 }

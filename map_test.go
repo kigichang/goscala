@@ -15,7 +15,7 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	m := gs.MkMap[int, string]()
+	m := maps.Make[int, string]()
 
 	m.Add(gs.P(1, "1"))
 	m.Add(nil)
@@ -106,7 +106,7 @@ func TestMapForall(t *testing.T) {
 	m.Add(gs.P(-1, "-1"))
 	assert.False(t, m.Forall(f1))
 
-	assert.True(t, gs.MkMap[int, string]().Forall(f1))
+	assert.True(t, maps.Make[int, string]().Forall(f1))
 }
 
 func TestMapForeach(t *testing.T) {
