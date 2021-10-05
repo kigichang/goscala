@@ -7,6 +7,7 @@ package opt
 
 import (
 	gs "github.com/kigichang/goscala"
+	"github.com/kigichang/goscala/impl"
 )
 
 func Bool[T any](v T, ok bool) gs.Option[T] {
@@ -67,14 +68,14 @@ func Fold[T, U any](opt gs.Option[T]) func(U) func(func(T) U) U {
 
 func Left[T, R any](opt gs.Option[T], z R) gs.Either[T, R] {
 	return gs.Partial(
-		gs.Left[T, R],
-		gs.FuncUnitAndThen(gs.VF(z), gs.Right[T, R]),
+		impl.Left[T, R],
+		gs.FuncUnitAndThen(gs.VF(z), impl.Right[T, R]),
 	)(opt.Fetch)
 }
 
 func Right[L, T any](opt gs.Option[T], z L) gs.Either[L, T] {
 	return gs.Partial(
-		gs.Right[L, T],
-		gs.FuncUnitAndThen(gs.VF(z), gs.Left[L, T]),
+		impl.Right[L, T],
+		gs.FuncUnitAndThen(gs.VF(z), impl.Left[L, T]),
 	)(opt.Fetch)
 }

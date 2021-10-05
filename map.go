@@ -56,6 +56,15 @@ func (i *_mapIter[K, V]) Get() (K, V) {
 	return k.(K), v.(V)
 }
 
+func newMapIter[K comparable, V any](m map[K]V) *_mapIter[K, V] {
+	return &_mapIter[K, V]{
+		len: func() int {
+			return len(m)
+		},
+		iter: reflect.ValueOf(m).MapRange(),
+	}
+}
+
 type _map[K comparable, V any] map[K]V
 
 func (m _map[K, V]) Len() int {
@@ -182,12 +191,7 @@ func (m _map[K, V]) Slice() Slice[Pair[K, V]] {
 }
 
 func (m _map[K, V]) Range() pair.Iter[K, V] {
-	return &_mapIter[K, V]{
-		len: func() int {
-			return len(m)
-		},
-		iter: reflect.ValueOf(m).MapRange(),
-	}
+	return newMapIter[K, V](m)
 }
 
 func MkMap[K comparable, V any](a ...int) Map[K, V] {
