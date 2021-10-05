@@ -17,11 +17,11 @@ import (
 
 func TestGenIter(t *testing.T) {
 
-	it := iter.Gen(1, 2, 3, 4)
-
-	ss := iter.Slice(it)
-
-	assert.Equal(t, ss, []int{1, 2, 3, 4})
+	ans := []int{1, 2, 3, 4}
+	it := iter.Gen(ans...)
+	assert.Equal(t, len(ans), it.Len())
+	assert.Equal(t, cap(ans), it.Cap())
+	assert.Equal(t, iter.Slice(it), ans)
 }
 
 func TestFoldLeft(t *testing.T) {

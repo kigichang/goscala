@@ -37,7 +37,12 @@ type Map[K comparable, V any] interface {
 }
 
 type _mapIter[K comparable, V any] struct {
+	len  func() int
 	iter *reflect.MapIter
+}
+
+func (i *_mapIter[K, V]) Len() int {
+	return i.len()
 }
 
 func (i *_mapIter[K, V]) Next() bool {
@@ -178,6 +183,9 @@ func (m _map[K, V]) Slice() Slice[Pair[K, V]] {
 
 func (m _map[K, V]) Range() pair.Iter[K, V] {
 	return &_mapIter[K, V]{
+		len: func() int {
+			return len(m)
+		},
 		iter: reflect.ValueOf(m).MapRange(),
 	}
 }

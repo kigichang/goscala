@@ -6,13 +6,27 @@
 package pair
 
 type Iter[K comparable, V any] interface {
+	Len() int
 	Next() bool
 	Get() (K, V)
 }
 
 type abstractIter[K comparable, V any] struct {
+	len  func() int
 	next func() bool
 	get  func() (K, V)
+}
+
+func (a *abstractIter[K, V]) Len() int {
+	return a.len()
+}
+
+func (a *abstractIter[K, V]) Next() bool {
+	return a.Next()
+}
+
+func (a *abstractIter[K, V]) Get() (K, V) {
+	return a.get()
 }
 
 func ToMap[K comparable, V any](a Iter[K, V]) map[K]V {
