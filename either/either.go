@@ -11,9 +11,15 @@ import (
 )
 
 func Left[L, R any](v L) gs.Either[L, R] {
-	return impl.Left[L, R](v)
+	return &impl.Either[L, R]{
+		OK: false,
+		L:  v,
+	}
 }
 
 func Right[L, R any](v R) gs.Either[L, R] {
-	return impl.Right[L, R](v)
+	return &impl.Either[L, R]{
+		OK: true,
+		R:  v,
+	}
 }
