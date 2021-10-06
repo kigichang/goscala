@@ -3,8 +3,9 @@ package maps
 import (
 	"github.com/kigichang/goscala/iter/pair"
 
-	gs "github.com/kigichang/goscala"
 	"reflect"
+
+	gs "github.com/kigichang/goscala"
 )
 
 type generalIter[K comparable, V any] struct {
@@ -54,12 +55,12 @@ func (g *generalMap[K, V]) Add(p gs.Pair[K, V]) {
 }
 
 func (g *generalMap[K, V]) Put(k K, v V) {
-	m := g.abstractMap.mapRanger.(_map[K, V])
+	m := g.abstractMap.ranger.(_map[K, V])
 	m[k] = v
 }
 
 func (g *generalMap[K, V]) Get(k K) (ret V, ok bool) {
-	m := g.abstractMap.mapRanger.(_map[K, V])
+	m := g.abstractMap.ranger.(_map[K, V])
 	ret, ok = m[k]
 	return
 }
@@ -70,7 +71,7 @@ func (g *generalMap[K, V]) Contains(k K) (ok bool) {
 }
 
 func (g *generalMap[K, V]) Delete(k K) {
-	m := g.abstractMap.mapRanger.(_map[K, V])
+	m := g.abstractMap.ranger.(_map[K, V])
 	delete(m, k)
 }
 

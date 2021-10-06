@@ -7,24 +7,27 @@ package goscala
 
 import "fmt"
 
-type Option[T any] interface {
+type Sequence[T any] interface {
 	fmt.Stringer
-	Fetcher[T]
+	Get(int) T
 
-	IsDefined() bool
 	IsEmpty() bool
+	IsNotEmpty() bool
 
-	Get() T
-	GetOrElse(T) T
-	//OrElse(Option[T]) Option[T]
+	Len() int
+	Cap() int
+	Append(...T) Sequence[T]
+	Head() Option[T]
+	Last() Option[T]
+
+	//Forall(func(T) bool) bool
+	//Foreach(func(T))
 	//
-	//Equals(func(T, T) bool) func(Option[T]) bool
+
+	//Tail() Sequence[T]
+	//
+	//Equals(func(T, T) bool) func(Sequence[T]) bool
 	//Contains(func(T, T) bool) func(T) bool
 	//Exists(func(T) bool) bool
-	//
-	//Filter(func(T) bool) Option[T]
-	//FilterNot(func(T) bool) Option[T]
-	//
-	//Forall(p func(T) bool) bool
-	//Foreach(f func(T))
+
 }

@@ -1,0 +1,36 @@
+// Copyright © 2021 Kigi Chang <kigi.chang@gmail.com>
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+
+package goscala
+
+import (
+	"github.com/kigichang/goscala/iter/pair"
+)
+
+type Map[K comparable, V any] interface {
+	Len() int
+	Keys() Slice[K]
+	Values() Slice[V]
+
+	Contains(K) bool
+	Count(func(K, V) bool) int
+
+	Find(func(K, V) bool) Option[Pair[K, V]]
+	Exists(func(K, V) bool) bool
+	Forall(func(K, V) bool) bool
+	Foreach(func(K, V))
+
+	Slice() Slice[Pair[K, V]]
+	Range() pair.Iter[K, V]
+
+	Add(Pair[K, V])
+	Put(K, V)
+	Get(K) (V, bool)
+	Delete(K)
+	GetOrElse(K, V) V
+	Partition(func(K, V) bool) (Map[K, V], Map[K, V])
+	Filter(func(K, V) bool) Map[K, V]
+	FilterNot(func(K, V) bool) Map[K, V]
+}

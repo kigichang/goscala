@@ -5,16 +5,16 @@ import (
 	"github.com/kigichang/goscala/iter/pair"
 )
 
-type mapRanger[K comparable, V any] interface {
+type ranger[K comparable, V any] interface {
 	Range() pair.Iter[K, V]
 }
 
 type abstractMap[K comparable, V any] struct {
-	mapRanger[K, V]
+	ranger[K, V]
 }
 
 func (m *abstractMap[K, V]) Len() int {
-	return m.Range().Len()
+	return m.Len()
 }
 
 func (m *abstractMap[K, V]) Keys() gs.Slice[K] {
