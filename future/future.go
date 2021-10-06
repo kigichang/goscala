@@ -116,16 +116,16 @@ func Make[T any](fn func() T) gs.Future[T] {
 			if r := recover(); r != nil {
 				switch rv := r.(type) {
 				case error:
-					x.val = gs.Failure[T](rv)
+					x.val = try.Failure[T](rv)
 				default:
-					x.val = gs.Failure[T](fmt.Errorf(`%v`, rv))
+					x.val = try.Failure[T](fmt.Errorf(`%v`, rv))
 				}
 			}
 
 			x.completed = true
 			x.cancel()
 		}()
-		x.val = gs.Success[T](fn())
+		x.val = try.Success[T](fn())
 	}(f)
 	return f
 }

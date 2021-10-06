@@ -6,159 +6,153 @@
 package try_test
 
 import (
+	"errors"
 	"fmt"
-	"strconv"
 	"testing"
 
-	gs "github.com/kigichang/goscala"
+	"github.com/kigichang/goscala"
 	"github.com/kigichang/goscala/try"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestErr(t *testing.T) {
-	v := 1
-	err := fmt.Errorf("tr error")
-	tr := try.Err[int](v, nil)
-
+func TestSuccess(t *testing.T) {
+	v := 0
+	tr := try.Success[int](v)
 	t.Log(tr)
 	assert.Equal(t, true, tr.IsSuccess())
 	assert.Equal(t, false, tr.IsFailure())
 	assert.Equal(t, v, tr.Get())
-	assert.Equal(t, gs.ErrUnsupported, tr.Failed())
+	assert.Equal(t, goscala.ErrUnsupported, tr.Failed())
+	assert.Equal(t, v, tr.Success())
+	v2, ok := tr.Fetch()
+	assert.Equal(t, v, v2)
+	assert.True(t, ok)
+}
 
-	tr = try.Err[int](v, err)
+func TestFailure(t *testing.T) {
+	assert.Panics(t, func() { try.Failure[int](nil) })
+
+	testErr := fmt.Errorf("test failure")
+	tr := try.Failure[int](testErr)
 	t.Log(tr)
 	assert.Equal(t, false, tr.IsSuccess())
 	assert.Equal(t, true, tr.IsFailure())
-	assert.Equal(t, err, tr.Failed())
+	assert.Equal(t, testErr, tr.Failed())
 	assert.Panics(t, func() { tr.Get() })
 }
 
-func TestCollect(t *testing.T) {
+func TestTryEquals(t *testing.T) {
+	err := fmt.Errorf("%w", goscala.ErrUnsupported)
 
-	pf := func(v int) (s string, ok bool) {
-		if ok = (v > 0); ok {
-			s = strconv.Itoa(v)
+	tr := try.Failure[int](err)
+
+	assert.True(t,
+		tr.Equals(goscala.Equal[int])(
+			try.Failure[int](goscala.ErrUnsupported)))
+
+	assert.False(t,
+		tr.Equals(goscala.Eq[int])(try.Failure[int](fmt.Errorf("Test"))))
+
+	tr = try.Success(100)
+	assert.True(t, tr.Equals(goscala.Eq[int])(try.Success(100)))
+	assert.False(t, tr.Equals(goscala.Eq[int])(try.Success(101)))
+
+	assert.False(t, try.Failure[int](goscala.ErrUnsupported).Equals(goscala.Eq[int])(try.Success(100)))
+	assert.False(t, try.Success(100).Equals(goscala.Eq[int])(try.Failure[int](goscala.ErrUnsupported)))
+
+}
+
+func TestTryFilter(t *testing.T) {
+	predict := func(v int) bool {
+		return v > 0
+	}
+
+	tr := try.Success(1)
+	tr2 := tr.Filter(predict)
+	assert.True(t, tr.IsSuccess())
+	assert.Equal(t, tr.Get(), tr2.Get())
+
+	tr = try.Success(-1)
+	tr2 = tr.Filter(predict)
+	assert.True(t, tr2.IsFailure())
+	assert.Equal(t, goscala.ErrUnsatisfied, tr2.Failed())
+
+	err := fmt.Errorf("tr filter error")
+	tr = try.Failure[int](err)
+	tr2 = tr.Filter(predict)
+	assert.True(t, tr2.IsFailure())
+	assert.Equal(t, tr.Failed(), tr2.Failed())
+	assert.Equal(t, err, tr2.Failed())
+}
+
+func TestTryForeach(t *testing.T) {
+	sum := 1
+	try.Success(1).Foreach(func(v int) {
+		sum += 1
+	})
+
+	assert.Equal(t, 1+1, sum)
+
+	sum = 1
+	try.Failure[int](goscala.ErrUnsupported).Foreach(func(v int) {
+		sum += 1
+	})
+	assert.Equal(t, 1, sum)
+}
+
+func TestTryGetOrElse(t *testing.T) {
+	assert.Equal(t, 1, try.Success(1).GetOrElse(-1))
+	assert.Equal(t, -1, try.Failure[int](goscala.ErrUnsatisfied).GetOrElse(-1))
+}
+
+func TestTryOrElse(t *testing.T) {
+	ans := try.Success(-1)
+	assert.Equal(t, 1, try.Success(1).OrElse(ans).Get())
+	assert.Equal(t, -1, try.Failure[int](goscala.ErrUnsupported).OrElse(ans).Get())
+}
+
+func TestTryRecover(t *testing.T) {
+	r := func(_ error) (int, bool) {
+		return 0, true
+	}
+
+	assert.Equal(t, 1, try.Success(1).Recover(r).Get())
+	assert.Equal(t, 0, try.Failure[int](goscala.ErrUnsupported).Recover(r).Get())
+
+	r = func(err error) (a int, ok bool) {
+		if ok = errors.Is(err, goscala.ErrUnsupported); ok {
+			a = 0
 		}
 		return
 	}
-	err := fmt.Errorf("tr collect error")
 
-	tr := gs.Success(1)
-	tr2 := try.Collect(tr, pf)
-	assert.True(t, tr2.IsSuccess())
-	assert.Equal(t, "1", tr2.Get())
+	assert.Equal(t, 1, try.Success(1).Recover(r).Get())
+	assert.Equal(t, 0, try.Failure[int](goscala.ErrUnsupported).Recover(r).Get())
 
-	tr = gs.Failure[int](err)
-	tr2 = try.Collect(tr, pf)
-	assert.True(t, tr2.IsFailure())
-	assert.Equal(t, err, tr2.Failed())
+	err := fmt.Errorf("test try recover error")
+	assert.Equal(t, err, try.Failure[int](err).Recover(r).Failed())
 
-	tr = gs.Success(-1)
-	tr2 = try.Collect(tr, pf)
-	assert.True(t, tr2.IsFailure())
-	assert.Equal(t, gs.ErrUnsatisfied, tr2.Failed())
 }
 
-func TestFlatMap(t *testing.T) {
-	f := func(v int) gs.Try[string] {
-		return gs.Success(fmt.Sprintf("%d", v))
+func TestTryRecoverWith(t *testing.T) {
+	r := func(_ error) (goscala.Try[int], bool) {
+		return try.Success(0), true
 	}
 
-	v := 100
-	tr := gs.Success(v)
-	tr2 := try.FlatMap(tr, f)
-	assert.True(t, tr2.IsSuccess())
-	assert.Equal(t, fmt.Sprintf(`%d`, v), tr2.Get())
+	assert.Equal(t, 1, try.Success(1).RecoverWith(r).Get())
+	assert.Equal(t, 0, try.Failure[int](goscala.ErrUnsupported).RecoverWith(r).Get())
 
-	err := fmt.Errorf("tr flatmap error")
-	tr = gs.Failure[int](err)
-	tr2 = try.FlatMap(tr, f)
-	assert.True(t, tr2.IsFailure())
-	assert.Equal(t, err, tr2.Failed())
-}
-
-func TestFold(t *testing.T) {
-	fail := func(err error) string {
-		return err.Error()
-	}
-
-	succ := strconv.Itoa
-
-	v := 100
-	errStr := `test fold error`
-	err := fmt.Errorf(errStr)
-
-	tr := gs.Success(v)
-	ans := try.Fold(tr, succ, fail)
-	assert.Equal(t, fmt.Sprintf(`%v`, v), ans)
-
-	tr = gs.Failure[int](err)
-	ans = try.Fold(tr, succ, fail)
-	assert.Equal(t, ans, errStr)
-}
-
-func TestMap(t *testing.T) {
-	tr := try.Map(gs.Success(100), strconv.Itoa)
-	assert.True(t, tr.IsSuccess())
-	assert.Equal(t, "100", tr.Get())
-
-	tr = try.Map(gs.Failure[int](gs.ErrEmpty), strconv.Itoa)
-	assert.True(t, tr.IsFailure())
-	assert.Equal(t, gs.ErrEmpty, tr.Failed())
-}
-
-func TestMapErr(t *testing.T) {
-	tr := try.MapErr(gs.Success("100"), strconv.Atoi)
-	assert.True(t, tr.IsSuccess())
-	assert.Equal(t, 100, tr.Get())
-
-	tr = try.MapErr(gs.Failure[string](gs.ErrEmpty), strconv.Atoi)
-	assert.True(t, tr.IsFailure())
-	assert.Equal(t, gs.ErrEmpty, tr.Failed())
-
-	tr = try.MapErr(gs.Success("abc"), strconv.Atoi)
-	assert.True(t, tr.IsFailure())
-}
-
-func TestMapBool(t *testing.T) {
-	m := map[int]string{
-		1: "1",
-	}
-
-	f := func(v int) (ret string, ok bool) {
-		ret, ok = m[v]
+	r = func(err error) (ret goscala.Try[int], ok bool) {
+		if ok = errors.Is(err, goscala.ErrUnsupported); ok {
+			ret = try.Success(0)
+		}
 		return
 	}
 
-	tr := try.MapBool(gs.Success(1), f)
-	assert.True(t, tr.IsSuccess())
-	assert.Equal(t, "1", tr.Get())
+	assert.Equal(t, 1, try.Success(1).RecoverWith(r).Get())
+	assert.Equal(t, 0, try.Failure[int](goscala.ErrUnsupported).RecoverWith(r).Get())
 
-	tr = try.MapBool(gs.Failure[int](gs.ErrEmpty), f)
-	assert.True(t, tr.IsFailure())
-	assert.Equal(t, gs.ErrEmpty, tr.Failed())
+	err := fmt.Errorf("test try recover with error")
+	assert.Equal(t, err, try.Failure[int](err).RecoverWith(r).Failed())
 
-	tr = try.MapBool(gs.Success(2), f)
-	assert.True(t, tr.IsFailure())
-	assert.Equal(t, gs.ErrUnsatisfied, tr.Failed())
-}
-
-func TestTryTransform(t *testing.T) {
-	succ := func(v string) gs.Try[int] {
-		return try.Err(strconv.Atoi(v))
-	}
-
-	fail := gs.Failure[int]
-
-	v := 123
-	tr := gs.Success(fmt.Sprintf(`%d`, v))
-	ans := try.Transform(tr, succ, fail)
-	assert.True(t, ans.IsSuccess())
-	assert.Equal(t, v, ans.Get())
-
-	tr = gs.Failure[string](gs.ErrEmpty)
-	ans = try.Transform(tr, succ, fail)
-	assert.True(t, ans.IsFailure())
-	assert.Equal(t, gs.ErrEmpty, ans.Failed())
 }
