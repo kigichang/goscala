@@ -6,13 +6,25 @@
 package iter
 
 type Iter[T any] interface {
+	Len() int
+	Cap() int
 	Next() bool
 	Get() T
 }
 
 type abstractIter[T any] struct {
+	len  func() int
+	cap  func() int
 	next func() bool
 	get  func() T
+}
+
+func (a *abstractIter[T]) Len() int {
+	return a.len()
+}
+
+func (a *abstractIter[T]) Cap() int {
+	return a.cap()
 }
 
 func (a *abstractIter[T]) Next() bool {
@@ -25,6 +37,8 @@ func (a *abstractIter[T]) Get() T {
 
 func newAbstractIter[T, U any](i Iter[T], fn func(T) U) Iter[U] {
 	return &abstractIter[U]{
+		len:  i.Len,
+		cap:  i.Cap,
 		next: i.Next,
 		get: func() U {
 			return fn(i.Get())
@@ -36,6 +50,12 @@ func Gen[T any](s ...T) Iter[T] {
 	idx := -1
 	ss := &s
 	return &abstractIter[T]{
+		len: func() int {
+			return len(*ss)
+		},
+		cap: func() int {
+			return cap(*ss)
+		},
 		next: func() (ok bool) {
 			idx++
 			if ok = (idx < len(*ss)); !ok {
@@ -56,6 +76,12 @@ func Map[T, U any](a Iter[T], fn func(T) U) Iter[U] {
 
 func FlatMap[T, U any](a Iter[T], fn func(T) Iter[U]) Iter[U] {
 	var cur Iter[U] = &abstractIter[U]{
+		len: func() int {
+			return 0
+		},
+		cap: func() int {
+			return 0
+		},
 		next: func() bool {
 			return false
 		},
@@ -64,6 +90,14 @@ func FlatMap[T, U any](a Iter[T], fn func(T) Iter[U]) Iter[U] {
 		},
 	}
 	return &abstractIter[U]{
+		len: func() int {
+			// length unknown
+			return 0
+		},
+		cap: func() int {
+			// capacity unknown
+			return 0
+		},
 		next: func() bool {
 			if !cur.Next() {
 				if !a.Next() {
@@ -81,7 +115,7 @@ func FlatMap[T, U any](a Iter[T], fn func(T) Iter[U]) Iter[U] {
 }
 
 func Slice[T any](a Iter[T]) []T {
-	ret := []T{}
+	ret := make([]T, 0, a.Cap())
 	for a.Next() {
 		ret = append(ret, a.Get())
 	}
@@ -121,6 +155,12 @@ func ScanLeft[T, U any](a Iter[T], z U, fn func(U, T) U) Iter[U] {
 	zz := z
 	first := true
 	return &abstractIter[U]{
+		len: func() int {
+			return a.Len() + 1
+		},
+		cap: func() int {
+			return a.Cap() + 1
+		},
 		next: func() (ok bool) {
 			return first || a.Next()
 		},
@@ -159,6 +199,14 @@ func Foreach[T any](a Iter[T], fn func(T)) {
 
 func Filter[T any](a Iter[T], p func(T) bool) Iter[T] {
 	return &abstractIter[T]{
+		len: func() int {
+			// length unknown
+			return 0
+		},
+		cap: func() int {
+			// capacity unknown
+			return 0
+		},
 		next: func() bool {
 			for a.Next() {
 				if p(a.Get()) {

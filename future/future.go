@@ -84,33 +84,54 @@ func (f *_future[T]) Filter(ctx context.Context, p func(T) bool) gs.Future[T] {
 	return TransformWith[T, T](ctx, f, func(a gs.Try[T]) gs.Future[T] {
 		if a.IsSuccess() {
 			if p(a.Success()) {
-				return Err[T](ctx, func() (ret T, _ error) {
+				return Err[T](func() (ret T, _ error) {
 					ret = a.Success()
 					return
 				})
 			}
 
-			return Err[T](ctx, func() (_ T, err error) {
+			return Err[T](func() (_ T, err error) {
 				err = gs.ErrUnsatisfied
 				return
 			})
 		}
 
-		return Err[T](ctx, func() (_ T, err error) {
+		return Err[T](func() (_ T, err error) {
 			err = a.Failed()
 			return
 		})
 	})
 }
 
-func future[T any](ctx context.Context) *_future[T] {
+func future[T any]() *_future[T] {
 	f := &_future[T]{}
-	f.ctx, f.cancel = context.WithCancel(ctx)
+	f.ctx, f.cancel = context.WithCancel(context.Background())
 	return f
 }
 
-func Err[T any](ctx context.Context, fn func() (T, error)) gs.Future[T] {
-	f := future[T](ctx)
+func Make[T any](fn func() T) gs.Future[T] {
+	f := future[T]()
+	go func(x *_future[T]) {
+		defer func() {
+			if r := recover(); r != nil {
+				switch rv := r.(type) {
+				case error:
+					x.val = gs.Failure[T](rv)
+				default:
+					x.val = gs.Failure[T](fmt.Errorf(`%v`, rv))
+				}
+			}
+
+			x.completed = true
+			x.cancel()
+		}()
+		x.val = gs.Success[T](fn())
+	}(f)
+	return f
+}
+
+func Err[T any](fn func() (T, error)) gs.Future[T] {
+	f := future[T]()
 
 	go func(x *_future[T]) {
 		x.val = try.Err(fn())
@@ -126,13 +147,25 @@ func Map[T, U any](ctx context.Context, a gs.Future[T], fn func(T) U) gs.Future[
 	})
 }
 
+func MapErr[T, U any](ctx context.Context, a gs.Future[T], fn func(T) (U, error)) gs.Future[U] {
+	return Transform(ctx, a, func(x gs.Try[T]) gs.Try[U] {
+		return try.MapErr(x, fn)
+	})
+}
+
+func MapBool[T, U any](ctx context.Context, a gs.Future[T], fn func(T) (U, bool)) gs.Future[U] {
+	return Transform(ctx, a, func(x gs.Try[T]) gs.Try[U] {
+		return try.MapBool(x, fn)
+	})
+}
+
 func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future[U]) gs.Future[U] {
 	return TransformWith(ctx, a, func(x gs.Try[T]) gs.Future[U] {
 		if x.IsSuccess() {
 			return fn(x.Success())
 		}
 
-		return Err[U](ctx, func() (ret U, err error) {
+		return Err[U](func() (ret U, err error) {
 			err = x.Failed()
 			return
 		})
@@ -140,7 +173,7 @@ func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future
 }
 
 func Transform[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T]) gs.Try[U]) gs.Future[U] {
-	f := future[U](ctx)
+	f := future[U]()
 
 	go func(apv context.Context, x *_future[U]) {
 		select {
@@ -150,17 +183,16 @@ func Transform[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T])
 				f.val = fn(v)
 				f.completed = true
 			}
-			x.cancel()
-		case <-x.ctx.Done():
-
+		case <-ctx.Done():
 		}
+		x.cancel()
 	}(a.PassValue(), f)
 
 	return f
 }
 
 func TransformWith[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T]) gs.Future[U]) gs.Future[U] {
-	f := future[U](ctx)
+	f := future[U]()
 
 	go func(apv context.Context, x *_future[U]) {
 		select {
@@ -168,7 +200,6 @@ func TransformWith[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try
 			v, completed := resulted[T](apv)
 			if completed {
 				b := fn(v)
-
 				go func(bpv context.Context, y *_future[U]) {
 					select {
 					case <-bpv.Done():
@@ -177,17 +208,17 @@ func TransformWith[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try
 							y.val = v2
 							y.completed = true
 						}
-						y.cancel()
-					case <-y.ctx.Done():
+					case <-ctx.Done():
 						// maybe cancelled.
 					}
-
+					y.cancel()
 				}(b.PassValue(), x)
 			} else {
 				x.cancel()
 			}
-		case <-x.ctx.Done():
-			// maybe cancelled
+		case <-ctx.Done():
+			// maybe cancelled.
+			x.cancel()
 		}
 	}(a.PassValue(), f)
 
