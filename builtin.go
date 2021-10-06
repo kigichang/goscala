@@ -7,16 +7,25 @@ package goscala
 
 import (
 	"constraints"
-	"reflect"
+	"fmt"
+)
+
+type Numeric interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
+		~float32 | ~float64
+}
+
+var (
+	ErrUnsupported = fmt.Errorf("unsupported")
+	ErrUnsatisfied = fmt.Errorf("unsatisfied")
+	ErrEmpty       = fmt.Errorf("emtpy")
+	ErrLeft        = fmt.Errorf("left")
 )
 
 type Fetcher[T any] interface {
 	Fetch() (T, bool)
 	FetchErr() (T, error)
-}
-
-func TypeStr(x interface{}) string {
-	return reflect.TypeOf(x).String()
 }
 
 func Max[T constraints.Ordered](a, b T) T {
