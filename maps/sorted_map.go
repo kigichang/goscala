@@ -23,9 +23,9 @@ func (n *node[K, V]) after(that *node[K, V]) {
 
 type nodes[K comparable, V any] struct {
 	compare func(K, K) int
-	size int
-	root *node[K, V]
-	head *node[K, V]
+	size    int
+	root    *node[K, V]
+	head    *node[K, V]
 }
 
 func (n *nodes[K, V]) compareAndSet(a, b *node[K, V]) (ret int) {
@@ -37,16 +37,15 @@ func (n *nodes[K, V]) compareAndSet(a, b *node[K, V]) (ret int) {
 }
 
 func newNodes[K comparable, V any](compare func(K, K) int, n ...node[K, V]) *nodes[K, V] {
-	ns := &nodes[K, V] {
+	ns := &nodes[K, V]{
 		compare: compare,
-		size: 0,
-		root: nil
-		head: nil
+		size:    0,
+		root:    nil,
+		head:    nil,
 	}
 
 	return ns
 }
-
 
 func newNode[K comparable, V any](k K, v V) *node[K, V] {
 	return &node[K, V]{
