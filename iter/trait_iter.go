@@ -5,50 +5,26 @@ import (
 )
 
 type TraitIterator[T any] struct {
-	len  func() int
-	cap  func() int
-	next func() bool
-	get  func() T
+	FnLen  func() int
+	FnCap  func() int
+	FnNext func() bool
+	FnGet  func() T
 }
 
 var _ gs.Iterator[int] = &TraitIterator[int]{}
 
-func (a *TraitIterator[T]) Len() int {
-	return a.len()
+func (i *TraitIterator[T]) Len() int {
+	return i.FnLen()
 }
 
-func (a *TraitIterator[T]) Cap() int {
-	return a.cap()
+func (i *TraitIterator[T]) Cap() int {
+	return i.FnCap()
 }
 
-func (a *TraitIterator[T]) Next() bool {
-	return a.next()
+func (i *TraitIterator[T]) Next() bool {
+	return i.FnNext()
 }
 
-func (a *TraitIterator[T]) Get() T {
-	return a.get()
-}
-
-func Gen[T any](s ...T) gs.Iterator[T] {
-	idx := -1
-	ss := &s
-	return &TraitIterator[T]{
-		len: func() int {
-			return len(*ss)
-		},
-		cap: func() int {
-			return cap(*ss)
-		},
-		next: func() (ok bool) {
-			idx++
-			if ok = (idx < len(*ss)); !ok {
-				idx = len(*ss)
-			}
-			return
-		},
-		get: func() T {
-			a := *ss
-			return a[idx]
-		},
-	}
+func (i *TraitIterator[T]) Get() T {
+	return i.FnGet()
 }

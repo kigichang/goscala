@@ -5,11 +5,16 @@
 
 package goscala
 
-import "fmt"
+//import "fmt"
 
 type Seq[T any] interface {
-	fmt.Stringer
-	Iterable[T]
+	//fmt.Stringer
+	Range() Iterator[T]
 	Len() int
+	Cap() int
 	Get(int) T
+}
+
+type Sliceable[T any] interface {
+	Slice() []T
 }
