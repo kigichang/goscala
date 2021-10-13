@@ -172,3 +172,7 @@ func Fold[T, U any](opt gs.Option[T]) func(U) func(func(T) U) U {
 		}
 	}
 }
+
+func Option[T any](c gs.Fetcher[T]) gs.Option[T] {
+	return gs.Partial(Some[T], None[T])(c.Fetch)
+}
