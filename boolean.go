@@ -13,15 +13,6 @@ func False() bool {
 	return false
 }
 
-func Default[T any](z T) func(func() (T, bool)) T {
-	return func(fn func() (T, bool)) T {
-		if v, ok := fn(); ok {
-			return v
-		}
-		return z
-	}
-}
-
 func Cond[T any](ok bool, t, f T) T {
 	if ok {
 		return t
@@ -29,9 +20,9 @@ func Cond[T any](ok bool, t, f T) T {
 	return f
 }
 
-func Ternary[T any](cond func() bool, succ func() T, fail func() T) T {
-	if cond() {
-		return succ()
+func Default[T any](z T) func(func() (T, bool)) T {
+	return func(fn func() (T, bool)) T {
+		v, ok := fn()
+		return Cond(ok, v, z)
 	}
-	return fail()
 }

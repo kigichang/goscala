@@ -26,12 +26,3 @@ func PredictTransform[T, U, R any](succ func(U) R, fail func(T) R) func(func(T) 
 		}
 	}
 }
-
-//func PtoPF[T any](p func(T) bool) func(T) (T, bool) {
-//	return func(v T) (ret T, ok bool) {
-//		if ok = p(v); ok {
-//			ret = v
-//		}
-//		return
-//	}
-//}

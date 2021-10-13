@@ -19,7 +19,7 @@ func TypeStr(x interface{}) string {
 	return reflect.TypeOf(x).String()
 }
 
-func Max[T constraints.Ordered](a constraints.Ordered, b constraints.Ordered) T {
+func Max[T constraints.Ordered](a, b T) T {
 	if a > b {
 		return a
 	}
