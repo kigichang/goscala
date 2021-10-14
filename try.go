@@ -13,10 +13,13 @@ import (
 type Try[T any] interface {
 	fmt.Stringer
 	Fetcher[T]
+	Sliceable[T]
+
 	IsSuccess() bool
 	Success() T
 	Failed() error
 	IsFailure() bool
+
 	Equals(func(T, T) bool) func(Try[T]) bool
 	Get() T
 	Filter(func(T) bool) Try[T]
@@ -27,8 +30,7 @@ type Try[T any] interface {
 	RecoverWith(func(error) (Try[T], bool)) Try[T]
 
 	Option() Option[T]
-	//Either() Either[error, T]
-	Slice() Slice[T]
+	Either() Either[error, T]
 }
 
 type try[T any] struct {
@@ -37,13 +39,6 @@ type try[T any] struct {
 }
 
 var _ Try[int] = &try[int]{}
-
-//func (t *try[T]) either() *either[error, T] {
-//	if t.err == nil {
-//		return right[error, T](t.v)
-//	}
-//	return left[error, T](t.err)
-//}
 
 func (t *try[T]) String() string {
 	if t.IsSuccess() {
@@ -145,38 +140,30 @@ func (t *try[T]) Option() Option[T] {
 	)(t.Fetch)
 }
 
-//func (t *try[T]) Either() Either[error, T] {
-//	return t.either()
-//}
-
-func (t *try[T]) Slice() Slice[T] {
-	return Partial(
-		SliceOne[T],
-		SliceEmpty[T],
-	)(t.Fetch)
+func (t *try[T]) Either() Either[error, T] {
+	if t.IsSuccess() {
+		return Right[error, T](t.v)
+	}
+	return Left[error, T](t.err)
 }
 
-func success[T any](v T) *try[T] {
+func (t *try[T]) Slice() []T {
+	return Partial(sliceOne[T], sliceEmpty[T])(t.Fetch)
+}
+
+func Success[T any](v T) Try[T] {
 	return &try[T]{
 		v:   v,
 		err: nil,
 	}
 }
 
-func Success[T any](v T) Try[T] {
-	return success[T](v)
-}
-
-func failure[T any](err error) *try[T] {
+func Failure[T any](err error) Try[T] {
 	if err == nil {
-		panic(fmt.Errorf("can not fail with nil error"))
+		err = ErrEmpty
 	}
 
 	return &try[T]{
 		err: err,
 	}
-}
-
-func Failure[T any](err error) Try[T] {
-	return failure[T](err)
 }

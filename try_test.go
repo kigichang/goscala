@@ -29,8 +29,6 @@ func TestSuccess(t *testing.T) {
 }
 
 func TestFailure(t *testing.T) {
-	assert.Panics(t, func() { goscala.Failure[int](nil) })
-
 	testErr := fmt.Errorf("test failure")
 	tr := goscala.Failure[int](testErr)
 	t.Log(tr)
