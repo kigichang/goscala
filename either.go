@@ -124,10 +124,7 @@ func (e *either[L, R]) Swap() Either[R, L] {
 }
 
 func (e *either[L, R]) Slice() []R {
-	return Partial(
-		sliceOne[R],
-		sliceEmpty[R],
-	)(e.Fetch)
+	return Slice[R](e)
 }
 
 func (e *either[L, R]) Try() Try[R] {

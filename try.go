@@ -148,7 +148,7 @@ func (t *try[T]) Either() Either[error, T] {
 }
 
 func (t *try[T]) Slice() []T {
-	return Partial(sliceOne[T], sliceEmpty[T])(t.Fetch)
+	return Slice[T](t)
 }
 
 func Success[T any](v T) Try[T] {

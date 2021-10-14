@@ -124,10 +124,7 @@ func (opt *option[T]) Foreach(f func(T)) {
 }
 
 func (opt *option[T]) Slice() []T {
-	return Partial(
-		sliceOne[T],
-		sliceEmpty[T],
-	)(opt.Fetch)
+	return Slice[T](opt)
 }
 
 func Some[T any](v T) Option[T] {
