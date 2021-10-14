@@ -12,6 +12,8 @@ import (
 type Either[L, R any] interface {
 	fmt.Stringer
 	Fetcher[R]
+	Sliceable[R]
+
 	IsRight() bool
 	IsLeft() bool
 	Get() R
@@ -26,8 +28,7 @@ type Either[L, R any] interface {
 	OrElse(Either[L, R]) Either[L, R]
 	Swap() Either[R, L]
 	Option() Option[R]
-	Slice() Slice[R]
-	// Try() Try[R]
+	Try() Try[R]
 }
 
 type either[L, R any] struct {
@@ -122,37 +123,28 @@ func (e *either[L, R]) Swap() Either[R, L] {
 	return Right[R, L](e.lv)
 }
 
-func (e *either[L, R]) Slice() Slice[R] {
+func (e *either[L, R]) Slice() []R {
 	return Partial(
-		SliceOne[R],
-		SliceEmpty[R],
+		sliceOne[R],
+		sliceEmpty[R],
 	)(e.Fetch)
 }
 
-//func (e *either[L, R]) try() *try[R] {
-//	if e.right {
-//		return success[R](e.rv)
-//	}
-//
-//	var x interface{} = e.lv
-//	switch v := x.(type) {
-//	case error:
-//		return failure[R](v)
-//	default:
-//		return failure[R](fmt.Errorf(`%v`, v))
-//	}
-//
-//}
-//
-//func (e *either[L, R]) Try() Try[R] {
-//	return e.try()
-//}
+func (e *either[L, R]) Try() Try[R] {
+	if e.right {
+		return Success[R](e.rv)
+	}
 
-func Left[L, R any](v L) Either[L, R] {
-	return left[L, R](v)
+	var x interface{} = e.lv
+	switch v := x.(type) {
+	case error:
+		return Failure[R](v)
+	default:
+		return Failure[R](fmt.Errorf(`%v`, v))
+	}
 }
 
-func left[L, R any](v L) *either[L, R] {
+func Left[L, R any](v L) Either[L, R] {
 	return &either[L, R]{
 		right: false,
 		lv:    v,
@@ -160,10 +152,6 @@ func left[L, R any](v L) *either[L, R] {
 }
 
 func Right[L, R any](v R) Either[L, R] {
-	return right[L, R](v)
-}
-
-func right[L, R any](v R) *either[L, R] {
 	return &either[L, R]{
 		right: true,
 		rv:    v,
