@@ -14,16 +14,16 @@ import (
 	"github.com/kigichang/goscala/try"
 )
 
-type _future[T any] struct {
+type future[T any] struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
 	completed bool
 	val       gs.Try[T]
 }
 
-var _ gs.Future[int] = &_future[int]{}
+var _ gs.Future[int] = &future[int]{}
 
-func (f *_future[T]) String() string {
+func (f *future[T]) String() string {
 	if f.completed {
 		return fmt.Sprintf(`Future(%v)`, f.val)
 	}
@@ -31,16 +31,16 @@ func (f *_future[T]) String() string {
 	return `Future(?)`
 }
 
-func (f *_future[T]) Completed() bool {
+func (f *future[T]) Completed() bool {
 	return f.completed
 }
 
-func (f *_future[T]) PassValue() context.Context {
+func (f *future[T]) PassValue() context.Context {
 	return withValue(f.ctx, &f.val, &f.completed)
 }
 
-func (f *_future[T]) OnComplete(fn func(gs.Try[T])) {
-	go func(x *_future[T]) {
+func (f *future[T]) OnComplete(fn func(gs.Try[T])) {
+	go func(x *future[T]) {
 		ctx := x.PassValue()
 		<-ctx.Done()
 		v, compleleted := resulted[T](ctx)
@@ -50,20 +50,20 @@ func (f *_future[T]) OnComplete(fn func(gs.Try[T])) {
 	}(f)
 }
 
-func (f *_future[T]) Foreach(fn func(T)) {
+func (f *future[T]) Foreach(fn func(T)) {
 	f.OnComplete(func(v gs.Try[T]) {
 		v.Foreach(fn)
 	})
 }
 
-func (f *_future[T]) Wait() {
+func (f *future[T]) Wait() {
 	if f.completed {
 		return
 	}
 	<-f.ctx.Done()
 }
 
-func (f *_future[T]) Result(atMost time.Duration) (ret T, err error) {
+func (f *future[T]) Result(atMost time.Duration) (ret T, err error) {
 	wait, cancel := context.WithTimeout(context.Background(), atMost)
 	defer cancel()
 
@@ -80,7 +80,7 @@ func (f *_future[T]) Result(atMost time.Duration) (ret T, err error) {
 	return
 }
 
-func (f *_future[T]) Filter(ctx context.Context, p func(T) bool) gs.Future[T] {
+func (f *future[T]) Filter(ctx context.Context, p func(T) bool) gs.Future[T] {
 	return TransformWith[T, T](ctx, f, func(a gs.Try[T]) gs.Future[T] {
 		if a.IsSuccess() {
 			if p(a.Success()) {
@@ -103,15 +103,19 @@ func (f *_future[T]) Filter(ctx context.Context, p func(T) bool) gs.Future[T] {
 	})
 }
 
-func future[T any]() *_future[T] {
-	f := &_future[T]{}
+func promise[T any]() *future[T] {
+	f := &future[T]{}
 	f.ctx, f.cancel = context.WithCancel(context.Background())
 	return f
 }
 
+func Promise[T any]() gs.Future[T] {
+	return promise[T]()
+}
+
 func Make[T any](fn func() T) gs.Future[T] {
-	f := future[T]()
-	go func(x *_future[T]) {
+	f := promise[T]()
+	go func(x *future[T]) {
 		defer func() {
 			if r := recover(); r != nil {
 				switch rv := r.(type) {
@@ -131,9 +135,9 @@ func Make[T any](fn func() T) gs.Future[T] {
 }
 
 func Err[T any](fn func() (T, error)) gs.Future[T] {
-	f := future[T]()
+	f := promise[T]()
 
-	go func(x *_future[T]) {
+	go func(x *future[T]) {
 		x.val = try.Err(fn())
 		x.completed = true
 		x.cancel()
@@ -173,9 +177,9 @@ func FlatMap[T, U any](ctx context.Context, a gs.Future[T], fn func(T) gs.Future
 }
 
 func Transform[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T]) gs.Try[U]) gs.Future[U] {
-	f := future[U]()
+	f := promise[U]()
 
-	go func(apv context.Context, x *_future[U]) {
+	go func(apv context.Context, x *future[U]) {
 		select {
 		case <-apv.Done():
 			v, completed := resulted[T](apv)
@@ -192,15 +196,15 @@ func Transform[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T])
 }
 
 func TransformWith[T, U any](ctx context.Context, a gs.Future[T], fn func(gs.Try[T]) gs.Future[U]) gs.Future[U] {
-	f := future[U]()
+	f := promise[U]()
 
-	go func(apv context.Context, x *_future[U]) {
+	go func(apv context.Context, x *future[U]) {
 		select {
 		case <-apv.Done():
 			v, completed := resulted[T](apv)
 			if completed {
 				b := fn(v)
-				go func(bpv context.Context, y *_future[U]) {
+				go func(bpv context.Context, y *future[U]) {
 					select {
 					case <-bpv.Done():
 						v2, completed2 := resulted[U](bpv)

@@ -9,8 +9,6 @@ import (
 type Future[T any] interface {
 	fmt.Stringer
 	Completed() bool
-	//Context() context.Context
-	//Value() Try[T]
 	PassValue() context.Context
 	OnComplete(func(Try[T]))
 	Foreach(func(T))
