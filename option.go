@@ -12,6 +12,8 @@ import (
 type Option[T any] interface {
 	fmt.Stringer
 	Fetcher[T]
+	Sliceable[T]
+
 	IsDefined() bool
 	IsEmpty() bool
 
@@ -20,12 +22,11 @@ type Option[T any] interface {
 	Equals(func(T, T) bool) func(Option[T]) bool
 	Filter(func(T) bool) Option[T]
 	FilterNot(func(T) bool) Option[T]
-	Forall(p func(T) bool) bool
-	Foreach(f func(T))
+	Forall(func(T) bool) bool
+	Foreach(func(T))
 	Get() T
 	GetOrElse(z T) T
 	OrElse(Option[T]) Option[T]
-	Slice() Slice[T]
 }
 
 type option[T any] struct {
@@ -122,10 +123,10 @@ func (opt *option[T]) Foreach(f func(T)) {
 	Partial(UnitWrap(f), Unit)(opt.Fetch)
 }
 
-func (opt *option[T]) Slice() Slice[T] {
+func (opt *option[T]) Slice() []T {
 	return Partial(
-		SliceOne[T],
-		SliceEmpty[T],
+		sliceOne[T],
+		sliceEmpty[T],
 	)(opt.Fetch)
 }
 
