@@ -16,3 +16,7 @@ func sliceOne[T any](elem T) []T {
 func sliceEmpty[T any]() []T {
 	return []T{}
 }
+
+func Slice[T any](f Fetcher[T]) []T {
+	return Partial(sliceOne[T], sliceEmpty[T])(f.Fetch)
+}
