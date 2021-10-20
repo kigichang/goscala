@@ -16,32 +16,33 @@ type Iterator[T any] interface {
 	Get() T
 }
 
-func skip[T any](it Iterator[T], n int) {
+func skip[T any](it Iterator[T], n int) Iterator[T] {
 	for i := 0; i < n && it.Next(); i++ {
 	}
+	return it
 }
 
 type Interface[T any] interface {
 	Len() int
 	Iterate() Iterator[T]
 	BackIterate() Iterator[T]
-	Append(T)
+	Append(T) Interface[T]
 }
 
 type Constraint[T any] interface {
 	Interface[T]
 }
 
-func cloneFrom[E Constraint[T], T any](it Iterator[T], empty func() E) E {
-	ret := empty()
+func CopyFrom[E Constraint[T], T any](it Iterator[T], empty func() E) E {
+	var ret Interface[T] = empty()
 	for it.Next() {
-		ret.Append(it.Get())
+		ret = ret.Append(it.Get())
 	}
-	return ret
+	return ret.(E)
 }
 
 func Clone[E Constraint[T], T any](s E, empty func() E) E {
-	return cloneFrom(s.Iterate(), empty)
+	return CopyFrom(s.Iterate(), empty)
 }
 
 func Forall[E Constraint[T], T any](s E, fn func(T) bool) bool {
@@ -187,8 +188,7 @@ func Take[E Constraint[T], T any](s E, empty func() E, n int) E {
 	if n < 0 {
 		it := s.Iterate()
 		skip(it, idx)
-
-		return cloneFrom(it, empty)
+		return CopyFrom(it, empty)
 	}
 
 	ret := empty()
@@ -234,7 +234,7 @@ func Drop[E Constraint[T], T any](s E, empty func() E, n int) E {
 	it := s.Iterate()
 
 	skip(it, idx)
-	return cloneFrom(it, empty)
+	return CopyFrom(it, empty)
 }
 
 func DropWhile[E Constraint[T], T any](s E, empty func() E, p func(T) bool) E {
@@ -466,7 +466,7 @@ func ScanRight[E1 Constraint[T], E2 Constraint[U], T, U any](s E1, empty func() 
 		return b
 	})
 
-	return cloneFrom(result.BackIterate(), empty)
+	return CopyFrom(result.BackIterate(), empty)
 }
 
 func Scan[E1 Constraint[T], E2 Constraint[U], T, U any](s E1, empty func() E2, z U, fn func(U, T) U) E2 {
