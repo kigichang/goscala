@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-type Option[T any] interface {
+type  Option[T any] interface {
 	fmt.Stringer
 	Fetcher[T]
 	Sliceable[T]
