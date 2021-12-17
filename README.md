@@ -1,5 +1,7 @@
 #  GoScala
 
+Migrate to [github.com/dairaga/gs](https://github.com/dairaga/gs)
+
 利用 Go 1.18 (2022 年推出) 的 Generic，實作 Scala Monoid 功能。目前還在開發、測試、實驗。 API 還會再修改。請不要用在開發與正式環境。
 
 目前已完成：
@@ -23,7 +25,7 @@
 1. `cd src`
 1. `./all.bash`
 
-Compile 時，還是需要用到 `-gcflags -G=3`
+~~Compile 時，還是需要用到 `-gcflags -G=3`~~
 
 ## 心得
 
